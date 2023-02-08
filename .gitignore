@@ -1,0 +1,14 @@
+# 通用忽略
+cache
+
+# Vscode 忽略文件
+.vscode
+
+# Python 忽略文件
+Scripts
+Lib
+Include
+__pycache__
+test.py
+test*
+pyvenv.cfg
