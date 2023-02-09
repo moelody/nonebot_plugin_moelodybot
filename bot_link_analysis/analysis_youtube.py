@@ -2,7 +2,7 @@
 import re
 
 import aiohttp
-from nonebot import on_message
+from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.adapters.onebot.v11.message import Message
@@ -11,7 +11,10 @@ from nonebot.params import EventPlainText
 from ..bot_utils.translator import translate_youdao
 from ..bot_utils import generate_cache_image_path, text_to_image, convert_to_uri
 
-ytb = on_message(priority=10, block=False)
+ytb = on_regex(
+    r"(youtube.com)",
+    flags=re.I,
+)
 
 # 请更换自己的key, 可以免费申请
 youtube_key = "AIzaSyDvKk4zrOCcF4MJEZeerPt9MdLNaUuw6Vs"

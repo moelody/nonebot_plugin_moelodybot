@@ -6,7 +6,7 @@ from nonebot import on_message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 
-from ..bot_utils import generate_cache_image_path, is_dragon, convert_to_uri
+from ..bot_utils import generate_cache_image_path, is_dragon, convert_to_uri, get_root_path
 
 dragon = on_message(priority=20, block=False)
 dragon_group = [444282933]

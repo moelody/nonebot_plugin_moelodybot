@@ -1,6 +1,6 @@
 import re
 
-from nonebot import logger, on_message
+from nonebot import on_message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 
 repeater_group = ["all"]
@@ -31,22 +31,17 @@ def message_preprocess(message: str):
 async def repeater(bot: Bot, event: GroupMessageEvent):
     # 检查是否在黑名单中
     if event.raw_message in blacklist:
-        logger.debug(f'[复读姬] 检测到黑名单消息: {event.raw_message}')
+
         return
     gid = str(event.group_id)
     if gid in repeater_group or "all" in repeater_group:
         global last_message, message_times
         message, raw_message = message_preprocess(str(event.message))
-        logger.debug(f'[复读姬] 这一次消息: {message}')
-        logger.debug(f'[复读姬] 上一次消息: {last_message.get(gid)}')
+
         if last_message.get(gid) != message:
             message_times[gid] = 1
         else:
             message_times[gid] += 1
-        logger.debug(
-            f'[复读姬] 已重复次数: {message_times.get(gid)}/{shortest_times}')
         if message_times.get(gid) == shortest_times:
-            logger.debug(f'[复读姬] 原始的消息: {str(event.message)}')
-            logger.debug(f"[复读姬] 欲发送信息: {raw_message}")
             await bot.send_group_msg(group_id=event.group_id, message=raw_message, auto_escape=False)
         last_message[gid] = message

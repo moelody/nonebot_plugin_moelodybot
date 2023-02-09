@@ -12,7 +12,7 @@ def is_dragon(file_path: str):
 
     det = DragonDetector()
     img = cv2.imread(file_path)
-    if det.is_dragon(img):
+    if det.is_dragon_image(img):
         return True
     else:
         return False
@@ -107,7 +107,7 @@ class DragonDetector(object):
                 pass
         return False
 
-    def is_dragon(self, img_np):
+    def is_dragon_image(self, img_np):
         found = False
         for template in self.template_sifts:
             for w in self.image_resolutions:
