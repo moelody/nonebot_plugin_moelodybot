@@ -14,7 +14,7 @@ dragon_group = [444282933]
 
 @dragon.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
-    if not event.group_id in dragon_group:
+    if event.group_id not in dragon_group:
         return
     for segment in event.get_message():
         if segment.type == "image":

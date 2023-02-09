@@ -12,7 +12,7 @@ def get_root_path():
 
 
 def generate_cache_image_path():
-    return str(Path(__file__).parent.parent.resolve()/"data/cache") + generate_timestamp() + ".jpg"
+    return str(Path(__file__).parent.parent.resolve() / "data/cache") + "/" + generate_timestamp() + ".jpg"
 
 
 def convert_to_uri(filepath):

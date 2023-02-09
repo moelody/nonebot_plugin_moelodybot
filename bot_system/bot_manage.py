@@ -1,4 +1,5 @@
 import traceback
+import time
 
 from nonebot import on_command, on_message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
@@ -24,9 +25,34 @@ async def handle_test(bot: Bot, event: GroupMessageEvent):
     await test.finish(msg)
 
 
+daxiaojie_last_time = 0
+luwei_last_time = 0
+
+
 @record.handle()
 async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
-    pass
+    if event.group_id != 444282933:
+        return
+
+    if event.user_id == 446480506:
+        last_sent_time = await bot.get_group_member_info(group_id=event.group_id, user_id=446480506, no_cache=True)
+        global daxiaojie_last_time
+
+        if last_sent_time["last_sent_time"] - daxiaojie_last_time > 3600:
+
+            daxiaojie_last_time = last_sent_time["last_sent_time"]
+            img = convert_to_uri(
+                get_root_path() + "/data/images/daxiaojie.gif")
+            print(img)
+            await record.finish(MS.image(img))
+
+    if event.user_id == 963036493:
+        last_sent_time = await bot.get_group_member_info(group_id=event.group_id, user_id=446480506, no_cache=True)
+        global luwei_last_time
+
+        if last_sent_time["last_sent_time"] - luwei_last_time > 3600:
+            luwei_last_time = last_sent_time["last_sent_time"]
+            await record.finish("芦苇大小姐嫁到")
 
 
 @show_pet.handle()
