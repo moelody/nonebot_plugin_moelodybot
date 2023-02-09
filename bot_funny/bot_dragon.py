@@ -19,7 +19,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     for segment in event.get_message():
         if segment.type == "image":
             url = segment.data.get("url").split("?")[0]
-
+            print(url)
             file_path = generate_cache_image_path()
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
@@ -27,6 +27,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
                         with open(file_path, 'wb') as f:
                             while True:
                                 chunk = await resp.content.read(1024)
+                                # 判断是不是gif 是则跳过
+                                if chunk[:6] in (b'GIF87a', b'GIF89a'):
+                                    return
                                 if not chunk:
                                     break
                                 f.write(chunk)
