@@ -8,7 +8,7 @@ from nonebot import on_regex
 from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from playwright.async_api import async_playwright
-from ..bot_utils import generate_timestamp, clean_link, get_root_path, convert_to_uri
+from ..bot_utils import generate_cache_image_path, clean_link,  convert_to_uri
 
 analysis_weibo = on_regex(
     r"(weibo.com)|(weibo.cn)",
@@ -38,7 +38,7 @@ async def _(event: Event):
             top = page.locator(".f-weibo")
         elif url.startswith("https://weibo"):
             top = page.locator("article.woo-panel-top")
-        out = get_root_path() + "/data/cache/" + generate_timestamp() + ".jpg"
+        out = generate_cache_image_path()
 
         await top.screenshot(path=out)
 

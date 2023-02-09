@@ -151,7 +151,7 @@ async def recover(bot: Bot, event: GroupMessageEvent):
     if str(gid) in backup_group or backup_group == []:
 
         await bot.send(event, "恢复中,请稍后(可能需要机器人管理员权限)")
-        root_dir = f"{get_root_path()}/data/gggroup/{str(gid)}"
+        root_dir = f"{get_root_path()}/data/qqgroup/{str(gid)}"
 
         # 创建群文件夹
         await createFolder(bot, root_dir, gid)
@@ -194,7 +194,7 @@ async def link(bot: Bot, event: GroupMessageEvent):
         # 是否备份根目录文件
         if backup_temp_files:
             root_files = group_root.get("files")
-            local_folder = f"{get_root_path()}/data/gggroup/{str(gid)}"
+            local_folder = f"{get_root_path()}/data/qqgroup/{str(gid)}"
             if root_files:
                 for root_file in root_files:
                     ignore_suf = Path(root_file["file_name"]).suffix
@@ -209,7 +209,7 @@ async def link(bot: Bot, event: GroupMessageEvent):
 
                 group_folder_data = await bot.get_group_files_by_folder(group_id=gid, folder_id=group_folder["folder_id"])
 
-                local_folder_path = f"{get_root_path()}/data/gggroup/{str(gid)}/{group_folder['folder_name']}"
+                local_folder_path = f"{get_root_path()}/data/qqgroup/{str(gid)}/{group_folder['folder_name']}"
 
                 group_folder_files = group_folder_data.get("files")
 

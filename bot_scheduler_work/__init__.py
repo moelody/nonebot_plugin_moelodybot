@@ -1,7 +1,7 @@
-from nonebot import require
+# from nonebot import require
 
 # 定时任务
-scheduler = require("nonebot_plugin_apscheduler").scheduler
+# scheduler = require("nonebot_plugin_apscheduler").scheduler
 
 
 # @scheduler.scheduled_job("cron", hour=0, minute=0,id="xx")

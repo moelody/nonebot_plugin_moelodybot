@@ -11,6 +11,10 @@ def get_root_path():
     return str(Path(__file__).parent.parent.resolve())
 
 
+def generate_cache_image_path():
+    return str(Path(__file__).parent.parent.resolve()/"data/cache") + generate_timestamp() + ".jpg"
+
+
 def convert_to_uri(filepath):
     return Path(filepath).as_uri()
 

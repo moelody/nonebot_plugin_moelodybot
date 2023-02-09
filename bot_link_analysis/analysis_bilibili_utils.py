@@ -10,7 +10,6 @@ from nonebot.adapters.onebot.v11 import Message, MessageSegment
 
 from ..bot_utils import text_to_image
 
-# group_id : last_vurl
 analysis_stat: Dict[int, str] = {}
 
 config = nonebot.get_driver().config

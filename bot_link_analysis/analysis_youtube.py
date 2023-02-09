@@ -9,7 +9,7 @@ from nonebot.adapters.onebot.v11.message import Message
 from nonebot.params import EventPlainText
 
 from ..bot_utils.translator import translate_youdao
-from ..bot_utils import generate_timestamp, get_root_path, text_to_image, convert_to_uri
+from ..bot_utils import generate_cache_image_path, text_to_image, convert_to_uri
 
 ytb = on_message(priority=10, block=False)
 
@@ -34,8 +34,7 @@ async def get_ytb_info(video_id: str, api_key: str):
                 thumbnail_url = data["items"][0]["snippet"]["thumbnails"]["standard"]["url"]
                 img = await session.get(thumbnail_url, proxy='http://127.0.0.1:10809')
                 content = await img.read()
-                target = get_root_path() + "/data/cache/" + \
-                    generate_timestamp() + "." + thumbnail_url.split(".")[-1]
+                target = generate_cache_image_path()
 
                 with open(target, 'wb') as f:
                     f.write(content)

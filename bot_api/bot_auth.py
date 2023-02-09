@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import jwt
 
-from .robotSql import BotSql
+from .bot_sql import BotSql
 
 sql_manage = BotSql()
 
@@ -53,14 +53,3 @@ class AuthHandler():
 if __name__ == '__main__':
 
     expire_seconds = 3600
-
-    is_admin = AuthHandler.verify_password("yueli", '1231')
-    print(is_admin)
-
-    TEST_DATA = dict(name="mooor", exp=datetime.utcnow() +
-                     timedelta(seconds=expire_seconds))
-    token = AuthHandler.generate_token(TEST_DATA)
-    print(token)
-
-    payload = AuthHandler.parse_token(token)
-    print(payload)

@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from .util import generate_timestamp, get_root_path, convert_to_uri
+from .util import generate_cache_image_path, convert_to_uri, get_root_path
 
 
 def split_content(content, content_size_list, max_line_width):
@@ -80,8 +80,7 @@ def text_to_image(text_list):
     image_result.paste(im=footer, box=(
         0, footage_clip_size + line_height * len(to_render_text_list)))
     image_result.show()
-    file_name = generate_timestamp() + ".jpg"
-    cache_path = (get_root_path() + "/data/cache/" + file_name)
+    cache_path = generate_cache_image_path()
 
     image_result.save(cache_path)
 

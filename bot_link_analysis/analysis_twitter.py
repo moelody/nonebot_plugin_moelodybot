@@ -1,4 +1,4 @@
-# https://github.com/...
+# https://twitter.com/seoamigo/status/1623199963210719232
 import re
 import time
 
@@ -8,16 +8,16 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from playwright.async_api import async_playwright
 
 
-from ..bot_utils.util import generate_timestamp, get_root_path, clean_link, convert_to_uri
+from ..bot_utils.util import generate_cache_image_path, clean_link, convert_to_uri
 
 
-github = on_regex(
-    r"(github.com)",
+twitter = on_regex(
+    r"(twitter.com)",
     flags=re.I,
 )
 
 
-@github.handle()
+@twitter.handle()
 async def _(event: GroupMessageEvent):
     text = str(event.message).strip()
     url = clean_link(text)
@@ -27,11 +27,14 @@ async def _(event: GroupMessageEvent):
         page = await context.new_page()
         await page.goto(url)
         time.sleep(2)
+        await page.evaluate("""() => {
+            document.querySelector('.css-1dbjc4n.r-aqfbo4.r-gtdqiz.r-1gn8etr.r-1g40b8q').style.display = 'none';
+                }""")
 
-        top = page.locator("readme-toc")
-        out = get_root_path() + "/data/cache/" + generate_timestamp() + ".jpg"
+        top = page.locator("main .r-16y2uox.r-1wbh5a2.r-1ny4l3l")
+        out = generate_cache_image_path()
 
         await top.screenshot(path=out)
 
         await browser.close()
-        await github.finish(MS.image(convert_to_uri(out)))
+        await twitter.finish(MS.image(convert_to_uri(out)))

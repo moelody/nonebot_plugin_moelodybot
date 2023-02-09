@@ -20,7 +20,6 @@ at = on_message(priority=10, block=False, rule=to_me())
 async def _poke(bot: Bot, event: PokeNotifyEvent):
 
     if str(event.target_id) == bot.self_id:
-
         if str(event.user_id) in config.superusers:
             msg = random.choice(poke_super_reply)
         else:

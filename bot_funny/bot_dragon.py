@@ -6,19 +6,21 @@ from nonebot import on_message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 
-from ..bot_utils import generate_timestamp, get_root_path, is_dragon, convert_to_uri
+from ..bot_utils import generate_cache_image_path, is_dragon, convert_to_uri
 
 dragon = on_message(priority=20, block=False)
+dragon_group = [444282933]
 
 
 @dragon.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
+    if not event.group_id in dragon_group:
+        return
     for segment in event.get_message():
         if segment.type == "image":
-
             url = segment.data.get("url").split("?")[0]
 
-            file_path = get_root_path() + "/data/cache/" + generate_timestamp() + ".jpg"
+            file_path = generate_cache_image_path()
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     if resp.status == 200:

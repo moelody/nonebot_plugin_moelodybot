@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from .util import generate_timestamp
+from .util import generate_cache_image_path
 
 
 async def handle_image(src):
@@ -29,7 +29,6 @@ async def handle_image(src):
             image_new, (rnd_w, rnd_h, rnd_w + width, rnd_h + width))
 
     im_crop = image_copy.crop(box)
-    out = r'/www/wwwroot/project/Robot/nobotX/plugins/data/images/temp/' + \
-        generate_timestamp() + src.suffix
+    out = generate_cache_image_path()
     im_crop.save(out, quality=50)
     return out

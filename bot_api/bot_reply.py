@@ -10,8 +10,8 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.params import EventPlainText
 
-from .auth import AuthHandler
-from .robotSql import BotSql
+from .bot_auth import AuthHandler
+from .bot_sql import BotSql
 
 driver = get_driver()
 reply_data = {}
@@ -149,12 +149,12 @@ async def init_web():
         else:
             return {"status": 401, "msg": data}
 
-    @app.get("/api/all_reply_list")
+    @app.get("/api/reply/all_reply_list")
     async def _():
         status, sqldata = refresh_reply_data()
         return {"status": 200, "msg": "获取成功", "sqldata": sqldata}
 
-    @app.get("/api/reply_list")
+    @app.get("/api/reply/list")
     async def _(token: str):
 
         res, data = AuthHandler.parse_token(token)
@@ -178,7 +178,7 @@ async def init_web():
         else:
             return {"status": 401, "msg": "获取失败"}
 
-    @app.get("/api/add_reply")
+    @app.get("/api/reply/add")
     async def _(token: str, key: str, reply: str, groups: str):
 
         res, data = AuthHandler.parse_token(token)
@@ -200,7 +200,7 @@ async def init_web():
         else:
             return {"status": 401, "msg": "添加失败"}
 
-    @app.get("/api/update_reply")
+    @app.get("/api/reply/update")
     async def _(token: str, key: str, reply: str, groups: str, reply_id: str):
 
         res, data = AuthHandler.parse_token(token)
@@ -222,7 +222,7 @@ async def init_web():
         else:
             return {"status": 401, "msg": "添加失败"}
 
-    @app.get("/api/delete_reply")
+    @app.get("/api/reply/delete")
     async def _(token: str, reply_id: str):
 
         res, data = AuthHandler.parse_token(token)
@@ -237,25 +237,6 @@ async def init_web():
                 return {"status": 401, "msg": msg}
         else:
             return {"status": 401, "msg": "删除失败"}
-
-    @app.get('/api/get_group_list_api')
-    async def get_group_list_api():
-        try:
-            group_list = await get_bot().get_group_list()
-            group_list = [{'label': f'{group["group_name"]}({group["group_id"]})', 'value': group['group_id']} for group
-                          in group_list]
-            return {
-                'status': 0,
-                'msg': 'ok',
-                'data': {
-                    'group_list': group_list
-                }
-            }
-        except ValueError:
-            return {
-                'status': -100,
-                'msg': '获取群和好友列表失败，请确认已连接GOCQ'
-            }
 
 
 @driver.on_shutdown

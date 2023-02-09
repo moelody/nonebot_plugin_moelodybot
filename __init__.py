@@ -7,7 +7,7 @@ src = "src.plugins."
 load_all_plugins(
 
     [
-        f"{src}nonebot_plugin_yuelibot.analysis",
+        f"{src}nonebot_plugin_yuelibot.bot_link_analysis",
         f"{src}nonebot_plugin_yuelibot.bot_api",
         f"{src}nonebot_plugin_yuelibot.bot_utils"
     ],
