@@ -41,7 +41,8 @@ def text_to_image(text_list):
     font_size = 24
 
     font = ImageFont.truetype(
-        get_root_path() + "/data/fonts/SourceHanSansCN-Medium.otf", font_size)
+        f"{get_root_path()}/data/fonts/SourceHanSansCN-Medium.otf", font_size
+    )
 
     footage_clip_size = 60
     lines_space = 15
@@ -49,8 +50,7 @@ def text_to_image(text_list):
 
     line_height = font_size + lines_space
 
-    footage = Image.open(
-        get_root_path() + "/data/images/background.jpg")
+    footage = Image.open(f"{get_root_path()}/data/images/background.jpg")
     header = footage.crop(box=(0, 0, footage.width, footage_clip_size))
     footer = footage.crop(box=(0, footage.height - footage_clip_size,
                                footage.width, footage.height))

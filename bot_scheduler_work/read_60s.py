@@ -52,9 +52,7 @@ async def suijitu():
                 resp = remove_upprintable_chars(resp)
                 retdata = json.loads(resp)
                 lst = retdata['imageUrl']
-                pic_ti1 = f"今日60S读世界已送达\n[CQ:image,file={lst}]"
-                return pic_ti1
-
+                return f"今日60S读世界已送达\n[CQ:image,file={lst}]"
     except:
         url = "https://api.iyk0.com/60s"
         async with aiohttp.ClientSession() as session:
@@ -63,8 +61,7 @@ async def suijitu():
                 resp = remove_upprintable_chars(resp)
                 retdata = json.loads(resp)
                 lst = retdata['imageUrl']
-                pic_ti1 = f"今日60S读世界已送达\n[CQ:image,file={lst}]"
-                return pic_ti1
+                return f"今日60S读世界已送达\n[CQ:image,file={lst}]"
 
 scheduler.add_job(read60s, "cron",
                   hour=plugin_config["read_inform_time"]["HOUR"],

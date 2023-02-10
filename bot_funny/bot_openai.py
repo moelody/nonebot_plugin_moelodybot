@@ -71,11 +71,9 @@ def get_ai_image(prompt):
 
 @ai_image.handle()
 async def ai_imagee(args: Message = CommandArg()):
-    arg = args.extract_plain_text()
-    if arg:
-
+    if arg := args.extract_plain_text():
         if arg.endswith("?") or arg.endswith("？"):
-            arg = arg + "？"
+            arg = f"{arg}？"
         await ai_image.finish(MS.image(get_ai_image(arg)))
     else:
         await change_key()
@@ -87,10 +85,14 @@ def is_ban(msg):
     for ban in ban_list:
         if ban in msg:
             return 1
-        else:
-            if ("yue" in msg) and ("li" in msg) or ("月" in msg) and ("离" in msg):
-                return 1
-            return 0
+        return (
+            1
+            if ("yue" in msg)
+            and ("li" in msg)
+            or ("月" in msg)
+            and ("离" in msg)
+            else 0
+        )
 
 
 @ai_chat.handle()
@@ -104,7 +106,7 @@ async def chatt(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()
             await ai_chat.finish("big胆!居然对主人不敬")
 
         if arg.endswith("?") or arg.endswith("？"):
-            arg = arg + "？"
+            arg = f"{arg}？"
         try:
             out = get_chat(arg)
             if is_ban(out):

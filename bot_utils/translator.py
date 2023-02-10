@@ -32,9 +32,7 @@ async def translate_bing(text: str, to: str, bing_key: str):
                 print(f"Bing翻译接口调用失败,错误代码{resp.status},{await resp.text()}")
                 return None
             jsonresult = await resp.json()
-            result = jsonresult[0]["translations"][0]["text"]
-
-            return result
+            return jsonresult[0]["translations"][0]["text"]
 
 
 async def translate_deepl(text: str, key: str):
@@ -53,9 +51,7 @@ async def translate_deepl(text: str, key: str):
                 print(f"DeepL翻译接口调用失败,错误代码{resp.status},{await resp.text()}")
                 return None
             jsonresult = await resp.json()
-            result = jsonresult["translations"][0]["text"]
-
-            return result
+            return jsonresult["translations"][0]["text"]
 
 
 async def translate_volcengine(src_content: str):

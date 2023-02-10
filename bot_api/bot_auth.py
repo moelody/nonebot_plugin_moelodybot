@@ -30,9 +30,9 @@ class AuthHandler():
     @classmethod
     def generate_token(cls, data: dict) -> str:
         headers = dict(typ="jwt", alg="HS256")
-        result = jwt.encode(payload=data, key=cls._salt, algorithm="HS256",
-                            headers=headers)
-        return result
+        return jwt.encode(
+            payload=data, key=cls._salt, algorithm="HS256", headers=headers
+        )
 
     # 解析token
     @classmethod

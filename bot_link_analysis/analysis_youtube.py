@@ -33,7 +33,7 @@ async def get_ytb_info(video_id: str, api_key: str):
 
                 description = description.replace("|", "\n")
                 if len(description) > 200:
-                    description = description[:200] + "......"
+                    description = f"{description[:200]}......"
                 thumbnail_url = data["items"][0]["snippet"]["thumbnails"]["standard"]["url"]
                 img = await session.get(thumbnail_url, proxy='http://127.0.0.1:10809')
                 content = await img.read()
@@ -50,9 +50,8 @@ async def get_ytb_info(video_id: str, api_key: str):
 async def _(bot: Bot, event: GroupMessageEvent, msg: Message = EventPlainText()):
 
     pattern = "(?<=youtube\.com\/watch\?v=)[^&]+"
-    match = re.search(pattern, msg)
-    if match:
-        video_id = match.group(0)
+    if match := re.search(pattern, msg):
+        video_id = match[0]
         msgs = await get_ytb_info(video_id, youtube_key)
         try:
             await bot.send_group_msg(group_id=event.group_id, message=msgs)

@@ -18,8 +18,7 @@ async def handle_image(src):
     image_height = image.height
 
     box = (3, 3, image_width - 3, image_height - 3)
-
-    for i in range(5):
+    for _ in range(5):
         rnd_w = random.randint(1, image_width - width)
         rnd_h = random.randint(1, clip * 2)
         # rnd = random.randint(width, image.width - width)

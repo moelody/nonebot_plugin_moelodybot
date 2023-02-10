@@ -1,4 +1,5 @@
 
+import contextlib
 import cv2
 import imageio.v2 as imageio
 import glob
@@ -12,18 +13,14 @@ def is_dragon(file_path: str):
 
     det = DragonDetector()
     img = cv2.imread(file_path)
-    if det.is_dragon_image(img):
-        return True
-    else:
-        return False
+    return bool(det.is_dragon_image(img))
 
 
 def read_img(name):
-    if name.endswith(".gif"):
-        gif = imageio.mimread(name)
-        return cv2.cvtColor(gif[0], cv2.COLOR_RGB2BGR)
-    else:
+    if not name.endswith(".gif"):
         return cv2.cvtColor(imageio.imread(name), cv2.COLOR_RGB2BGR)
+    gif = imageio.mimread(name)
+    return cv2.cvtColor(gif[0], cv2.COLOR_RGB2BGR)
 
 
 def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -48,10 +45,7 @@ def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
         r = width / float(w)
         dim = (width, int(h * r))
 
-    # resize the image
-    resized = cv2.resize(image, dim, interpolation=inter)
-    # return the resized image
-    return resized
+    return cv2.resize(image, dim, interpolation=inter)
 
 
 def minEnclosingCircleArea(pts):
@@ -61,8 +55,7 @@ def minEnclosingCircleArea(pts):
 
 class DragonDetector(object):
     def __init__(self, template_image_pattern='template*.png', image_resolutions=[20, 60, 100, 200, 400], match_point_threshold=5, circle_area_threshold=0.2):
-        template_path = get_root_path() + "/data/images/dragon_template/" + \
-            template_image_pattern
+        template_path = f"{get_root_path()}/data/images/dragon_template/{template_image_pattern}"
         self.templates = [read_img(fn)
                           for fn in glob.glob(template_path)]
 
@@ -86,10 +79,7 @@ class DragonDetector(object):
             matches = self.flann.knnMatch(des1, des2, k=2)
         except Exception:
             return False
-        good = []
-        for m, n in matches:
-            if m.distance < 0.7 * n.distance:
-                good.append(m)
+        good = [m for m, n in matches if m.distance < 0.7 * n.distance]
         if len(good) > self.match_point_threshold:
             src_pts = np.float32(
                 [kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
@@ -99,12 +89,10 @@ class DragonDetector(object):
             h, w, d = template_shape
             pts = np.float32([[0, 0], [0, h-1], [w-1, h-1],
                              [w-1, 0]]).reshape(-1, 1, 2)
-            try:
+            with contextlib.suppress(Exception):
                 dst = cv2.perspectiveTransform(pts, M)
                 if cv2.contourArea(dst) > self.circle_area_threshold * minEnclosingCircleArea(dst):
                     return True
-            except Exception:
-                pass
         return False
 
     def is_dragon_image(self, img_np):

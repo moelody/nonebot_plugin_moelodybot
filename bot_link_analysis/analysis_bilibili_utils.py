@@ -48,7 +48,7 @@ async def bili_keyword(group_id: Optional[int], text: str) -> Union[Message, str
                 return ""
             analysis_stat[group_id] = vurl
     except Exception as e:
-        msg = "bili_keyword Error: {}".format(type(e))
+        msg = f"bili_keyword Error: {type(e)}"
     return msg
 
 
@@ -169,7 +169,7 @@ async def video_detail(url: str, **kwargs) -> Tuple[Union[Message, str], str]:
         msg = Message([cover, vurl, img])
         return msg, vurl
     except Exception as e:
-        msg = "视频解析出错--Error: {}".format(type(e))
+        msg = f"视频解析出错--Error: {type(e)}"
         return msg, None
 
 
@@ -214,7 +214,7 @@ async def bangumi_detail(
         msg = Message([cover, f"{vurl}\n", img])
         return msg, vurl
     except Exception as e:
-        msg = "番剧解析出错--Error: {}".format(type(e))
+        msg = f"番剧解析出错--Error: {type(e)}"
         msg += f"\n{url}"
         return msg, None
 
@@ -268,7 +268,7 @@ async def live_detail(url: str) -> Tuple[Union[Message, str], str]:
         msg = Message([cover, vurl, img])
         return msg, vurl
     except Exception as e:
-        msg = "直播间解析出错--Error: {}".format(type(e))
+        msg = f"直播间解析出错--Error: {type(e)}"
         return msg, None
 
 
@@ -302,7 +302,7 @@ async def article_detail(url: str, cvid: str) -> Tuple[Union[Message, str], str]
         msg.extend([vurl, img])
         return msg, vurl
     except Exception as e:
-        msg = "专栏解析出错--Error: {}".format(type(e))
+        msg = f"专栏解析出错--Error: {type(e)}"
         return msg, None
 
 
@@ -323,7 +323,7 @@ async def dynamic_detail(url: str) -> Tuple[Union[Message, str], str]:
             content = item.get("content")
         content = content.replace("\r", "\n")
         if len(content) > 250:
-            content = content[:250] + "......"
+            content = f"{content[:250]}......"
         images = (
             item.get("pictures", [])
             if analysis_display_image or "dynamic" in analysis_display_image_list
@@ -331,14 +331,11 @@ async def dynamic_detail(url: str) -> Tuple[Union[Message, str], str]:
         )
         if images:
             images = [MessageSegment.image(i.get("img_src")) for i in images]
-        else:
-            pics = item.get("pictures_count")
-            if pics:
-                content += f"\nPS：动态中包含{pics}张图片"
+        elif pics := item.get("pictures_count"):
+            content += f"\nPS：动态中包含{pics}张图片"
         if origin := card.get("origin"):
             jorigin = json.loads(origin)
-            short_link = jorigin.get("short_link")
-            if short_link:
+            if short_link := jorigin.get("short_link"):
                 content += f"\n动态包含转发视频{short_link}"
             else:
                 content += "\n动态包含转发其他动态"
@@ -349,5 +346,5 @@ async def dynamic_detail(url: str) -> Tuple[Union[Message, str], str]:
         msg.append(f"\n{vurl}")
         return msg, vurl
     except Exception as e:
-        msg = "动态解析出错--Error: {}".format(type(e))
+        msg = f"动态解析出错--Error: {type(e)}"
         return msg, None

@@ -48,11 +48,7 @@ async def get_url(url):
 
 
 async def get_url2(url, cmd):
-    params = {
-
-    }
-    if cmd == "r18":
-        params = {"r18": 1}
+    params = {"r18": 1} if cmd == "r18" else {}
     async with aiohttp.ClientSession(connector=TCPConnector(ssl=True)) as session:
         async with session.get(url, params=params) as response:
             try:
@@ -62,12 +58,14 @@ async def get_url2(url, cmd):
                 print(tar_url)
                 img = await session.get(tar_url, proxy='http://127.0.0.1:10809')
                 content = await img.read()
-                target = get_root_path() + "/data/images/setu/" + \
-                    str(name) + "." + tar_url.split(".")[-1]
+                target = (
+                    f"{get_root_path()}/data/images/setu/{str(name)}."
+                    + tar_url.split(".")[-1]
+                )
 
                 with open(target, 'wb') as f:
                     f.write(content)
-            except:
+            except Exception:
                 target = False
 
             return target

@@ -42,7 +42,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
 
             daxiaojie_last_time = last_sent_time["last_sent_time"]
             img = convert_to_uri(
-                get_root_path() + "/data/images/daxiaojie.gif")
+                f"{get_root_path()}/data/images/daxiaojie.gif")
             print(img)
             await record.finish(MS.image(img))
 
@@ -60,7 +60,7 @@ async def handle_pet(bot: Bot, event: GroupMessageEvent):
     try:
 
         msg = MS.image(convert_to_uri(
-            get_root_path() + "/data/images/表情包指令.jpg"))
+            f"{get_root_path()}/data/images/表情包指令.jpg"))
         await bot.send_group_msg(group_id=event.group_id, message=msg)
     except Exception as e:
         await bot.send_group_msg(group_id=event.group_id, message="获取失败喵")

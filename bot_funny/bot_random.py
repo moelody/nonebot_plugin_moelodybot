@@ -61,10 +61,10 @@ async def _(bot: Bot, event: GroupMessageEvent, cmd: str = RawCommand()):
 
 @ random_eat.handle()
 async def _():
-    random_folder = get_root_path() + "/data/images/eat_pic"
+    random_folder = f"{get_root_path()}/data/images/eat_pic"
     filename = random.choice(
         os.listdir(random_folder))
-    random_file = random_folder + "/" + filename
+    random_file = f"{random_folder}/{filename}"
 
     text = random.choice(random_reply_list).format(filename.split(".")[0])
     await random_eat.finish(MS.text(text) + MS.image(convert_to_uri(random_file)))
@@ -72,10 +72,10 @@ async def _():
 
 @ random_drink.handle()
 async def _():
-    random_folder = get_root_path() + "/data/images/drink_pic"
+    random_folder = f"{get_root_path()}/data/images/drink_pic"
     filename = random.choice(
         os.listdir(random_folder))
-    random_file = random_folder + "/" + filename
+    random_file = f"{random_folder}/{filename}"
 
     text = random.choice(random_reply_list).format(filename.split(".")[0])
     await random_drink.finish(MS.text(text) + MS.image(convert_to_uri(random_file)))

@@ -12,8 +12,7 @@ tran = on_command("translate", aliases={"翻译"}, priority=9, block=True)
 
 @tran.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args=CommandArg()):
-    arg = args.extract_plain_text()
-    if arg:
+    if arg := args.extract_plain_text():
         text = await translate_youdao(arg)
         msg = MS.text(text)
         await bot.send_group_msg(group_id=event.group_id, message=msg)

@@ -21,5 +21,4 @@ def convert_to_uri(filepath):
 
 def clean_link(link):
     link = re.findall(r'(https?://\S+)', link)[0]
-    cleaned_link = re.sub(r'\?.*$', '', link)
-    return cleaned_link
+    return re.sub(r'\?.*$', '', link)

@@ -16,6 +16,5 @@ bot_echo = on_command("echo", priority=10, block=True)
 
 @bot_echo.handle()
 async def _(args: Message = CommandArg()):
-    arg = args.extract_plain_text()
-    if arg:
+    if arg := args.extract_plain_text():
         await bot_echo.finish(arg)

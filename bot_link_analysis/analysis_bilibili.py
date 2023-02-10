@@ -17,6 +17,7 @@ group_blacklist = getattr(config, "analysis_group_blacklist", [])
 
 @analysis_bili.handle()
 async def analysis_main(event: Event) -> None:
+
     text = str(event.message).strip()
     if blacklist and int(event.get_user_id()) in blacklist:
         return

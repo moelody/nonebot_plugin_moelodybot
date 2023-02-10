@@ -51,10 +51,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @reply.handle()
 async def handle_reply(bot: Bot, event: GroupMessageEvent, msg: Message = EventPlainText()):
     msg = msg.strip().lower()
-    res = reply_data.get(msg + "|" + str(event.group_id)
-                         ) or reply_data.get(msg)
 
-    if res:
+    if res := reply_data.get(f"{msg}|{str(event.group_id)}") or reply_data.get(
+        msg
+    ):
+
         await reply.finish(MS.text(res))
 
 
@@ -65,7 +66,7 @@ def refresh_reply_data():
     print(sqldata)
     for data in sqldata:
         keys = data[2].split(",")
-        suffix = "|" + data[4] if data[4] else ""
+        suffix = f"|{data[4]}" if data[4] else ""
         for key in keys:
             reply = data[3].replace("{}", key) if '{}' in data[3] else data[3]
             reply_data[(key + suffix).lower()] = reply
@@ -144,10 +145,7 @@ async def init_web():
         sql = """INSERT INTO `userdata` ( `username`, `groups`) VALUES ( %s, %s)"""
         print(sql, username, groups)
         res, data = sql_manage.add_data(sql, username, groups)
-        if res:
-            return {"status": 200, "msg": data}
-        else:
-            return {"status": 401, "msg": data}
+        return {"status": 200, "msg": data} if res else {"status": 401, "msg": data}
 
     @app.get("/api/reply/all_reply_list")
     async def _():
@@ -186,7 +184,7 @@ async def init_web():
         if not groups:
             groups = data.get("groups")
 
-        if key == "" or reply == "":
+        if not key or not reply:
             return {"status": 401, "msg": "key 与 reply 不可以为空"}
         if res:
             sql = """INSERT INTO `msgdata` (`ID`, `username`, `keyword`, `reply`, `groups`) VALUES (NULL, %s, %s, %s,%s);""".replace(
@@ -208,7 +206,7 @@ async def init_web():
         if not groups:
             groups = data.get("groups")
 
-        if key == "" or reply == "":
+        if not key or not reply:
             return {"status": 401, "msg": "key 与 reply 不可以为空"}
         if res:
             sql = "UPDATE `msgdata` SET `keyword` = %s, `reply` = %s, `groups` = %s WHERE `msgdata`.`ID` = %s;".replace(
