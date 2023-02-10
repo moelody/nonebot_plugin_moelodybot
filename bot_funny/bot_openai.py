@@ -5,13 +5,14 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata
+import time,random,os
 
+from ..bot_utils import convert_to_uri,get_root_path
+
+# 填入你的key列表( 在这里创建: https://platform.openai.com/account/api-keys ) 
 openai_keys = [
-    "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",
-    "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",
-    "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",
-    "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",
-    "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"
+    "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",
+    "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"
 ]
 
 __version__ = "0.0.1"
@@ -27,6 +28,8 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
+openai_group = [444282933,680653092,761708854]
+openai_cd = {group: 0 for group in openai_group}
 current_id = 0
 openai_key = openai_keys[current_id]
 
@@ -40,8 +43,7 @@ ai_image = on_command("生成图片", priority=9, block=True)
 async def change_key():
     global current_id, openai_key
     current_id += 1
-    openai_key = openai_keys[current_id % 5]
-    return openai_key
+    openai_key = openai_keys[current_id % len(openai_keys)]
 
 
 def get_chat(prompt):
@@ -50,7 +52,7 @@ def get_chat(prompt):
         model="text-davinci-003",
         prompt=cat_preset + "\n" + prompt,
         temperature=0.3,
-        max_tokens=1500,
+        max_tokens=400,
         top_p=1.0,
         frequency_penalty=0.0,
         presence_penalty=0.0
@@ -81,38 +83,53 @@ async def ai_imagee(args: Message = CommandArg()):
 
 
 def is_ban(msg):
-    ban_list = ["月离", "yueli"]
-    for ban in ban_list:
-        if ban in msg:
-            return 1
-        return (
-            1
-            if ("yue" in msg)
-            and ("li" in msg)
-            or ("月" in msg)
-            and ("离" in msg)
-            else 0
-        )
+  ban_list = ["月离", "yueli"]
+  for ban in ban_list:
+    if ban in msg:
+        return 1
+    return (
+        1
+        if ("yue" in msg)
+        and ("li" in msg)
+        or ("月" in msg)
+        and ("离" in msg)
+        else 0
+    )
 
 
 @ai_chat.handle()
 async def chatt(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     arg = args.extract_plain_text()
     gid = event.group_id
+    if gid not in openai_group:
+        await ai_chat.finish("请联系管理员开通喵~")
+    global openai_cd
+    now = time.time()
+
+    if now - openai_cd[gid] < 60:
+      remain = int(60 - now + openai_cd[gid])
+      await ai_chat.finish(f"本群剩余CD{remain}/60s")
+    
     if arg:
         arg = arg.strip()
 
         if is_ban(arg):
-            await ai_chat.finish("big胆!居然对主人不敬")
+            dragon_folder = f"{get_root_path()}/data/images/dragon_images"
+            random_file = f"{dragon_folder}/{random.choice(os.listdir(dragon_folder))}"
+
+            await ai_chat.finish(MS.image(convert_to_uri(random_file)))
 
         if arg.endswith("?") or arg.endswith("？"):
             arg = f"{arg}？"
         try:
+            openai_cd.update({gid:now})
             out = get_chat(arg)
             if is_ban(out):
-                await ai_chat.finish("big胆!居然对主人不敬")
-            await bot.send_group_msg(group_id=gid, message=MS.text(out))
-        except:
+              dragon_folder = f"{get_root_path()}/data/images/dragon_images"
+              random_file = f"{dragon_folder}/{random.choice(os.listdir(dragon_folder))}"
+              await ai_chat.finish(MS.image(convert_to_uri(random_file)))
+            await bot.finish(MS.text(out))
+        except Exception:
             await change_key()
             await bot.send_group_msg(group_id=gid, message=MS.text("已超出额度，稍后再试喵"))
 

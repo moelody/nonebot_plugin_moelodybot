@@ -13,15 +13,15 @@ from ..bot_utils import get_root_path, convert_to_uri
 # 菜单来源: https://github.com/Cvandia/nonebot-plugin-whateat-pic
 
 random_member = on_command(
-    "抽群友", aliases={"抽女群友", "抽男群友"}, priority=10, block=True)
+    "抽群友", aliases={"抽女群友", "抽男群友","换一个","再换一个"}, priority=10, block=True)
 
 random_eat = on_regex(
-    r"(吃什么)|(吃啥)|(饿)",
+    r"(吃什么)|(吃啥)|(饿)|(换一个吃)",
     flags=re.I
 )
 
 random_drink = on_regex(
-    r"(喝什么)|(喝啥)",
+    r"(喝什么)|(喝啥)|(渴)|(换一个喝)",
     flags=re.I
 )
 
@@ -31,6 +31,7 @@ random_reply_list = [
     "来尝尝「{}」吧",
     "月灵觉得「{}」不错哟~",
     "就决定是你了!「{}」!",
+    "月灵想吃「{}」!",
 ]
 
 
@@ -39,7 +40,7 @@ async def _(bot: Bot, event: GroupMessageEvent, cmd: str = RawCommand()):
 
     group_info = await bot.get_group_member_list(group_id=event.group_id, no_cache=True)
 
-    if cmd == "抽群友":
+    if cmd in ["抽群友" ,"换一个","再换一个"]:
         group_info = sorted(
             group_info, key=lambda x: x["last_sent_time"])[-50:]
         member_info = random.choice(group_info)
@@ -79,3 +80,4 @@ async def _():
 
     text = random.choice(random_reply_list).format(filename.split(".")[0])
     await random_drink.finish(MS.text(text) + MS.image(convert_to_uri(random_file)))
+ 

@@ -43,7 +43,6 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
             daxiaojie_last_time = last_sent_time["last_sent_time"]
             img = convert_to_uri(
                 f"{get_root_path()}/data/images/daxiaojie.gif")
-            print(img)
             await record.finish(MS.image(img))
 
     if event.user_id == 963036493:
@@ -52,7 +51,9 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
 
         if last_sent_time["last_sent_time"] - luwei_last_time > 3600:
             luwei_last_time = last_sent_time["last_sent_time"]
-            await record.finish("芦苇大小姐嫁到")
+            img = convert_to_uri(
+                f"{get_root_path()}/data/images/start_dragon.jpg")
+            await record.finish(MS.text("芦苇大小姐嫁到") + MS.image(img))
 
 
 @show_pet.handle()
