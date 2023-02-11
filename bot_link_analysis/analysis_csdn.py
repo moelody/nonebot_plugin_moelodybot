@@ -1,7 +1,6 @@
-# https://mp.weixin.qq.com/s?__biz=MzI1
+# https://blog.csdn.net/...
 import re
 import time
-import json
 
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
@@ -13,39 +12,34 @@ from ..bot_utils.util import clean_link, convert_to_uri, generate_cache_image_pa
 
 
 github = on_regex(
-    r"(mp.weixin.qq)",
+    r"(blog.csdn.net)",
     flags=re.I, priority=99,
 )
 
 
 @github.handle()
 async def _(event: GroupMessageEvent):
-  for segment in event.get_message():
-    if segment.type == "json":
+    text = str(event.message).strip()
+    url = clean_link(text)
 
-      data = json.loads(segment.data["data"])
-      url = data["meta"]["news"]["jumpUrl"]
-
-      async with async_playwright() as p:
+    async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path=r"/opt/google/chrome/chrome", headless=True)
         context = await browser.new_context()
         page = await context.new_page()
         await page.goto(url)
-        time.sleep(2)
-
-        top = page.locator(".rich_media_wrp")
+        time.sleep(4)
         await page.evaluate("""() => {
-                sections = document.querySelectorAll("[data-tool=mdnice编辑器]")
-                for (let index = 0; index < sections.length; index++) {
-                    if(index>8){
-                        sections[index].style.display="none"
-                    }
-                }
+            document.querySelector('#blogColumnPayAdvert').style.display = 'none';
                 }""")
+        await page.evaluate("""() => {
+        document.querySelector('.toolbar-btn-login').remove();
+            }""")
+        top = page.locator(".blog-content-box")
 
         out = generate_cache_image_path()
 
         await top.screenshot(path=out)
 
+        await context.close()
         await browser.close()
         await github.finish(MS.image(convert_to_uri(out)))

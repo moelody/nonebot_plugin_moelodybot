@@ -9,6 +9,7 @@ load_all_plugins(
         'src.plugins.nonebot_plugin_yuelibot.bot_link_analysis.analysis_wechat',
         'src.plugins.nonebot_plugin_yuelibot.bot_link_analysis.analysis_twitter',
         'src.plugins.nonebot_plugin_yuelibot.bot_link_analysis.analysis_github',
+        'src.plugins.nonebot_plugin_yuelibot.bot_link_analysis.analysis_csdn',
     ],
     []
 )

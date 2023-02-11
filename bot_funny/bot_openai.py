@@ -5,11 +5,13 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.params import CommandArg
 from nonebot.plugin import PluginMetadata
-import time,random,os
+import time
+import random
+import os
 
-from ..bot_utils import convert_to_uri,get_root_path
+from ..bot_utils import convert_to_uri, get_root_path
 
-# 填入你的key列表( 在这里创建: https://platform.openai.com/account/api-keys ) 
+# 填入你的key列表( 在这里创建: https://platform.openai.com/account/api-keys )
 openai_keys = [
     "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",
     "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"
@@ -28,7 +30,7 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-openai_group = [444282933,680653092,761708854]
+openai_group = [444282933, 680653092, 761708854]
 openai_cd = {group: 0 for group in openai_group}
 current_id = 0
 openai_key = openai_keys[current_id]
@@ -83,18 +85,18 @@ async def ai_imagee(args: Message = CommandArg()):
 
 
 def is_ban(msg):
-  ban_list = ["月离", "yueli"]
-  for ban in ban_list:
-    if ban in msg:
-        return 1
-    return (
-        1
-        if ("yue" in msg)
-        and ("li" in msg)
-        or ("月" in msg)
-        and ("离" in msg)
-        else 0
-    )
+    ban_list = ["月离", "yueli"]
+    for ban in ban_list:
+        if ban in msg:
+            return 1
+        return (
+            1
+            if ("yue" in msg)
+            and ("li" in msg)
+            or ("月" in msg)
+            and ("离" in msg)
+            else 0
+        )
 
 
 @ai_chat.handle()
@@ -107,9 +109,9 @@ async def chatt(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()
     now = time.time()
 
     if now - openai_cd[gid] < 60:
-      remain = int(60 - now + openai_cd[gid])
-      await ai_chat.finish(f"本群剩余CD{remain}/60s")
-    
+        remain = int(60 - now + openai_cd[gid])
+        await ai_chat.finish(f"本群剩余CD{remain}/60s")
+
     if arg:
         arg = arg.strip()
 
@@ -122,12 +124,12 @@ async def chatt(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()
         if arg.endswith("?") or arg.endswith("？"):
             arg = f"{arg}？"
         try:
-            openai_cd.update({gid:now})
+            openai_cd.update({gid: now})
             out = get_chat(arg)
             if is_ban(out):
-              dragon_folder = f"{get_root_path()}/data/images/dragon_images"
-              random_file = f"{dragon_folder}/{random.choice(os.listdir(dragon_folder))}"
-              await ai_chat.finish(MS.image(convert_to_uri(random_file)))
+                dragon_folder = f"{get_root_path()}/data/images/dragon_images"
+                random_file = f"{dragon_folder}/{random.choice(os.listdir(dragon_folder))}"
+                await ai_chat.finish(MS.image(convert_to_uri(random_file)))
             await bot.finish(MS.text(out))
         except Exception:
             await change_key()

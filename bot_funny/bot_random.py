@@ -1,29 +1,15 @@
 
 import random
 import os
-import re
 
-from nonebot import on_command, on_regex
+from nonebot import on_regex, on_keyword
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
-from nonebot.params import RawCommand
+from nonebot.params import Keyword
 
 from ..bot_utils import get_root_path, convert_to_uri
 
 # 菜单来源: https://github.com/Cvandia/nonebot-plugin-whateat-pic
-
-random_member = on_command(
-    "抽群友", aliases={"抽女群友", "抽男群友","换一个","再换一个"}, priority=10, block=True)
-
-random_eat = on_regex(
-    r"(吃什么)|(吃啥)|(饿)|(换一个吃)",
-    flags=re.I
-)
-
-random_drink = on_regex(
-    r"(喝什么)|(喝啥)|(渴)|(换一个喝)",
-    flags=re.I
-)
 
 random_reply_list = [
     "emmm,要不试试「{}」",
@@ -34,33 +20,44 @@ random_reply_list = [
     "月灵想吃「{}」!",
 ]
 
+random_sel_member = on_keyword(
+    keywords=["抽群友", "抽男群友", "抽女群友"],
+    priority=5, block=False)
 
-@ random_member.handle()
-async def _(bot: Bot, event: GroupMessageEvent, cmd: str = RawCommand()):
+random_eat = on_keyword(
+    keywords=["吃什么", "吃啥", "饿", "换一个吃", "想吃"],
+    priority=10, block=False
+)
 
+random_drink = on_regex(
+    r"(喝什么)|(喝啥)|(渴)|(换一个喝)",
+    priority=10, block=False
+)
+
+
+@random_sel_member.handle()
+async def random_mem(bot: Bot, event: GroupMessageEvent, cmd: str = Keyword()):
     group_info = await bot.get_group_member_list(group_id=event.group_id, no_cache=True)
 
-    if cmd in ["抽群友" ,"换一个","再换一个"]:
+    if cmd in {"抽群友", "换一个", "再换一个"}:
         group_info = sorted(
             group_info, key=lambda x: x["last_sent_time"])[-50:]
-        member_info = random.choice(group_info)
     elif cmd == "抽女群友":
         group_info = [mem for mem in group_info if mem.get('sex') == 'female']
-        member_info = random.choice(group_info)
     elif cmd == "抽男群友":
         group_info = [mem for mem in group_info if mem.get('sex') == 'male']
-        member_info = random.choice(group_info)
 
+    member_info = random.choice(group_info)
     user_id = member_info.get("user_id")
     nickname = member_info.get("nickname")
     msg = MS.text(f"你抽到的群友是:{nickname}\n")
     msg += MS.image(
         f"https://q.qlogo.cn/headimg_dl?dst_uin={user_id}&spec=640")
 
-    await random_member.finish(message=msg, at_sender=True)
+    await random_sel_member.finish(message=msg, at_sender=True)
 
 
-@ random_eat.handle()
+@random_eat.handle()
 async def _():
     random_folder = f"{get_root_path()}/data/images/eat_pic"
     filename = random.choice(
@@ -71,7 +68,7 @@ async def _():
     await random_eat.finish(MS.text(text) + MS.image(convert_to_uri(random_file)))
 
 
-@ random_drink.handle()
+@random_drink.handle()
 async def _():
     random_folder = f"{get_root_path()}/data/images/drink_pic"
     filename = random.choice(
@@ -80,4 +77,3 @@ async def _():
 
     text = random.choice(random_reply_list).format(filename.split(".")[0])
     await random_drink.finish(MS.text(text) + MS.image(convert_to_uri(random_file)))
- 
