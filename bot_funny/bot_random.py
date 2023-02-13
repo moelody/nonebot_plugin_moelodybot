@@ -21,17 +21,17 @@ random_reply_list = [
 ]
 
 random_sel_member = on_keyword(
-    keywords=["抽群友", "抽男群友", "抽女群友"],
-    priority=5, block=False)
+    keywords=["女群友", "男群友", "群友"],
+    priority=10, block=True)
 
 random_eat = on_keyword(
     keywords=["吃什么", "吃啥", "饿", "换一个吃", "想吃"],
-    priority=10, block=False
+    priority=5, block=True
 )
 
 random_drink = on_regex(
     r"(喝什么)|(喝啥)|(渴)|(换一个喝)",
-    priority=10, block=False
+    priority=10, block=True
 )
 
 
@@ -39,13 +39,15 @@ random_drink = on_regex(
 async def random_mem(bot: Bot, event: GroupMessageEvent, cmd: str = Keyword()):
     group_info = await bot.get_group_member_list(group_id=event.group_id, no_cache=True)
 
-    if cmd in {"抽群友", "换一个", "再换一个"}:
+    if cmd == "女群友":
+        group_info = [mem for mem in group_info if mem.get('sex') == 'female']
+    elif cmd == "男群友":
+        group_info = [mem for mem in group_info if mem.get('sex') == 'male']
+    elif cmd in {"群友"}:
+        if "杀群友" in str(event.message):
+            return
         group_info = sorted(
             group_info, key=lambda x: x["last_sent_time"])[-50:]
-    elif cmd == "抽女群友":
-        group_info = [mem for mem in group_info if mem.get('sex') == 'female']
-    elif cmd == "抽男群友":
-        group_info = [mem for mem in group_info if mem.get('sex') == 'male']
 
     member_info = random.choice(group_info)
     user_id = member_info.get("user_id")

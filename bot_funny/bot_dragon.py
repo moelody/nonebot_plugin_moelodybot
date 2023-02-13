@@ -2,18 +2,31 @@ import random
 import os
 import aiohttp
 
-from nonebot import on_message
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot import on_message, on_keyword
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 
 from ..bot_utils import generate_cache_image_path, is_dragon, convert_to_uri, get_root_path
 
 dragon = on_message(priority=20, block=False)
-dragon_group = [444282933]
+dragon_group = [444282933, 303281689, 680653092]
+
+dragon_cmd = on_keyword(
+    keywords=["龙"],
+    priority=10, block=True
+)
+dragon_folder = f"{get_root_path()}/data/images/dragon_images"
+
+
+@dragon_cmd.handle()
+async def _():
+
+    random_file = f"{dragon_folder}/{random.choice(os.listdir(dragon_folder))}"
+    await dragon_cmd.finish(MS.image(convert_to_uri(random_file)))
 
 
 @dragon.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(event: GroupMessageEvent):
     if event.group_id not in dragon_group:
         return
     for segment in event.get_message():
@@ -34,7 +47,5 @@ async def _(bot: Bot, event: GroupMessageEvent):
                                 f.write(chunk)
 
                         if is_dragon(file_path):
-                            dragon_folder = f"{get_root_path()}/data/images/dragon_images"
                             random_file = f"{dragon_folder}/{random.choice(os.listdir(dragon_folder))}"
-
                             await dragon.finish(MS.image(convert_to_uri(random_file)))
