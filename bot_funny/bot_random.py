@@ -22,7 +22,7 @@ random_reply_list = [
 
 random_sel_member = on_keyword(
     keywords=["女群友", "男群友", "群友"],
-    priority=10, block=True)
+    priority=9, block=True)
 
 random_eat = on_keyword(
     keywords=["吃什么", "吃啥", "饿", "换一个吃", "想吃"],

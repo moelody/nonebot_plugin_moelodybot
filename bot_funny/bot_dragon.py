@@ -19,8 +19,9 @@ dragon_folder = f"{get_root_path()}/data/images/dragon_images"
 
 
 @dragon_cmd.handle()
-async def _():
-
+async def _(event: GroupMessageEvent):
+    if event.group_id not in dragon_group:
+        return
     random_file = f"{dragon_folder}/{random.choice(os.listdir(dragon_folder))}"
     await dragon_cmd.finish(MS.image(convert_to_uri(random_file)))
 
