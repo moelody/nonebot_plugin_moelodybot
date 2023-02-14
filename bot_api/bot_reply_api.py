@@ -1,31 +1,14 @@
-from datetime import datetime, timedelta, timezone
-from typing import Union
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nonebot import get_app, get_driver
 
 from .bot_auth import AuthHandler
-from .bot_reply import reply_data
+from .bot_reply import refresh_reply_data
 from .bot_sql import BotSql
 
 driver = get_driver()
 sql_manage = BotSql()
-
-
-def refresh_reply_data():
-    global reply_data
-    reply_data.clear()
-    status, sqldata = sql_manage.get_data("SELECT * FROM `replydata`")
-    print(sqldata)
-    for data in sqldata:
-        keys = data[2].split(",")
-        suffix = f"|{data[4]}" if data[4] else ""
-        for key in keys:
-            reply = data[3].replace("{}", key) if '{}' in data[3] else data[3]
-            reply_data[(key + suffix).lower()] = reply
-
-    return status, sqldata
 
 
 @driver.on_startup
