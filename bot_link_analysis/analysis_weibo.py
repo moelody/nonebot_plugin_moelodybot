@@ -28,7 +28,7 @@ async def _(event: Event):
     await page.goto(url)
 
     # 获取所有li 使用locator
-    if url.startswith("https://m.weibo"):
+    if "https://m.weibo" in url:
       await page.evaluate("""() => {
             document.querySelector('.lite-topbar').style.display = 'none';
                 }""")
@@ -36,7 +36,7 @@ async def _(event: Event):
                 document.querySelector('.lite-page-editor').style.display = 'none';
                 }""")
       top = page.locator(".f-weibo")
-    elif url.startswith("https://weibo"):
+    elif "https://weibo" in url:
       top = page.locator("article.woo-panel-top")
     out = generate_cache_image_path()
 

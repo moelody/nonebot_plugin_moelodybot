@@ -58,12 +58,12 @@ def refresh_reply_data():
     global reply_data
     reply_data.clear()
     status, sqldata = sql_manage.get_data("SELECT * FROM `replydata`")
-    print(sqldata)
     for data in sqldata:
-        keys = data[2].split(",")
-        suffix = f"|{data[4]}" if data[4] else ""
+        keys = data['keyword'].split(",")
+        suffix = f"{data['groups']}" if data["groups"] else ""
         for key in keys:
-            reply = data[3].replace("{}", key) if '{}' in data[3] else data[3]
+            reply = data['reply'].replace(
+                "{}", key) if '{}' in data['reply'] else data['reply']
             reply_data[(key + suffix).lower()] = reply
 
     return status, sqldata

@@ -25,7 +25,6 @@ class BotSql:
     def add_data(self, sql, *query):
         cur = self.conn.cursor()
         try:
-
             cur.execute(sql, (*query, ))
             return True, 1
         except Exception as e:
@@ -36,7 +35,6 @@ class BotSql:
     def delete_data(self, sql, *query):
         cur = self.conn.cursor()
         try:
-
             cur.execute(sql, (*query, ))
             return True, 1
         except Exception as e:
@@ -49,7 +47,9 @@ class BotSql:
         rest = (False, "")
         try:
             cur.execute(sql, query)
-            rest = (True, cur.fetchall())
+            headers = [i[0] for i in cur.description]
+            results = [dict(zip(headers, row)) for row in cur.fetchall()]
+            rest = (True, results)
         except Exception as e:
             rest = (False, e)
         finally:

@@ -40,10 +40,12 @@ async def init_reply():
         token_status, data = AuthHandler.parse_token(token)
 
         if token_status:
+            # 管理员直接给数据(全部)
             if (data.get("usertype") == "admin"):
                 admin_status, sqldata = refresh_reply_data()
                 return {"status": 200, "msg": "获取成功", "token": token, "sqldata": sqldata}
 
+            # 不是管理员获取个人数据
             sql = """SELECT * FROM `replydata` WHERE `username` = %s"""
             user_status, sqldata = sql_manage.get_data(
                 sql, data.get('username'))
