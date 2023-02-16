@@ -5,7 +5,7 @@ import os
 from nonebot import on_regex, on_keyword
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
-from nonebot.params import Keyword
+from nonebot.params import RegexStr
 
 from ..bot_utils import get_root_path, convert_to_uri
 
@@ -20,8 +20,8 @@ random_reply_list = [
     "月灵想吃「{}」!",
 ]
 
-random_sel_member = on_keyword(
-    keywords=["女群友", "男群友", "群友"],
+random_sel_member = on_regex(
+    pattern="抽.*群友",
     priority=9, block=True)
 
 random_eat = on_keyword(
@@ -36,7 +36,9 @@ random_drink = on_regex(
 
 
 @random_sel_member.handle()
-async def random_mem(bot: Bot, event: GroupMessageEvent, cmd: str = Keyword()):
+async def random_mem(bot: Bot, event: GroupMessageEvent, cmd: str = RegexStr()):
+    if "抽" not in cmd:
+        return
     group_info = await bot.get_group_member_list(group_id=event.group_id, no_cache=True)
 
     if cmd == "女群友":

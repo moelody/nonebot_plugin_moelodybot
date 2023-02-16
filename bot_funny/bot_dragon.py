@@ -12,7 +12,7 @@ dragon = on_message(priority=20, block=False)
 dragon_group = [444282933, 303281689, 680653092]
 
 dragon_cmd = on_keyword(
-    keywords=["龙"],
+    keywords=["龙图"],
     priority=10, block=True
 )
 dragon_folder = f"{get_root_path()}/data/images/dragon_images"
