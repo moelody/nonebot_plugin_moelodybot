@@ -74,7 +74,7 @@ async def init_reply():
         if res:
             sql = """INSERT INTO `replydata` (`ID`, `username`, `keyword`, `reply`, `groups`) VALUES (NULL, %s, %s, %s,%s);""".replace(
                 "'None',", "null,").replace("None,", "null,")
-            status, msg = sql_manage.add_data(
+            status, msg = sql_manage.get_data(
                 sql, data.get('username'), key, reply, groups)
             if status:
                 return {"status": 200, "msg": "添加成功"}
@@ -97,7 +97,7 @@ async def init_reply():
         if status:
             sql = "UPDATE `replydata` SET `keyword` = %s, `reply` = %s, `groups` = %s WHERE `replydata`.`ID` = %s;".replace(
                 "'None',", "null,").replace("None,", "null,")
-            status, msg = sql_manage.add_data(
+            status, msg = sql_manage.get_data(
                 sql, key, reply, groups, reply_id)
             if status:
                 return {"status": 200, "msg": "添加成功"}
@@ -113,7 +113,7 @@ async def init_reply():
         # 没有判断用户, 可以加个是管理员 可以无视用户
         if status:
             sql = "DELETE FROM `replydata` WHERE `id` = %s;"
-            status, msg = sql_manage.delete_data(
+            status, msg = sql_manage.get_data(
                 sql, reply_id)
             if status:
                 return {"status": 200, "msg": "删除成功"}

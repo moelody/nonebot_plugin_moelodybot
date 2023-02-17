@@ -12,7 +12,7 @@ import os
 from ..bot_utils import convert_to_uri, get_root_path
 
 # 填入你的key列表( 在这里创建: https://platform.openai.com/account/api-keys )
-from ..secret import openai_keys
+from ..config import openai_keys
 
 # openai_keys = [
 #     "sk-7OumDgzX...",

@@ -13,3 +13,4 @@ test.py
 test*
 pyvenv.cfg
 test.py
+config.py

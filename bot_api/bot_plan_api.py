@@ -73,14 +73,14 @@ async def init_plan():
         if state:
 
             sql = """INSERT INTO `plandata` (`title`, `content`, `period`, `create_date`, `finish_date`, `category`, `tag`, `status`, `priority`) VALUES (%s, %s, %s,%s,%s, %s, %s,%s,%s);"""
-            state, msg = sql_manage.add_data(
+            state, msg = sql_manage.get_data(
                 sql, title, content, period, timestamp2mysqltime(create_date), timestamp2mysqltime(finish_date), category, tag, status, priority)
             return {"status": 200, "msg": "添加成功"} if state else {"status": 401, "msg": msg}
         else:
             return {"status": 401, "msg": "添加失败"}
 
     @app.get("/api/plan/update")
-    async def _(token: str,  plan_id: str, title: str, content: str = "NULL", period: str = "task",  finish_date='NULL', category: str = "NULL", tag: str = "NULL", status: str = "draft", priority: str = "1"):
+    async def _(token: str, plan_id: str, title: str, content: str = "NULL", period: str = "task", finish_date='NULL', category: str = "NULL", tag: str = "NULL", status: str = "draft", priority: str = "1"):
         # todo 感觉不用加
         if not title or not token:
             return {"status": 401, "msg": "token plan_id 和 title 不可以为空"}
@@ -89,7 +89,7 @@ async def init_plan():
 
         if state:
             sql = "UPDATE `plandata` SET `title` = %s, `content` = %s, `period` = %s , `finish_date` = %s, `category` = %s, `tag` = %s, `status` = %s ,`priority` = %s  WHERE `plandata`.`ID` = %s;"
-            status, msg = sql_manage.add_data(
+            status, msg = sql_manage.get_data(
                 sql, title, content, period, timestamp2mysqltime(finish_date), category, tag, status, priority, plan_id)
             if status:
                 return {"status": 200, "msg": "添加成功"}
@@ -105,7 +105,7 @@ async def init_plan():
         # 没有判断用户, 可以加个是管理员 可以无视用户
         if status:
             sql = "DELETE FROM `plandata` WHERE `id` = %s;"
-            status, msg = sql_manage.delete_data(
+            status, msg = sql_manage.get_data(
                 sql, plan_id)
             if status:
                 return {"status": 200, "msg": "删除成功"}

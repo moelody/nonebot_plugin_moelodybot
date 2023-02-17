@@ -21,7 +21,7 @@ random_reply_list = [
 ]
 
 random_sel_member = on_regex(
-    pattern="抽.*群友",
+    pattern="(抽.*群友)|(抽然然)|(抽老婆)|(抽老公)",
     priority=9, block=True)
 
 random_eat = on_keyword(
@@ -39,21 +39,29 @@ random_drink = on_regex(
 async def random_mem(bot: Bot, event: GroupMessageEvent, cmd: str = RegexStr()):
     if "抽" not in cmd:
         return
+    # if cmd == "抽然然":
+    #     msg = MS.text("你抽到的群友是:傻然\n")
+    #     msg += MS.image(
+    #         "https://q.qlogo.cn/headimg_dl?dst_uin=21615991&spec=640")
+    #     await random_sel_member.finish(message=msg, at_sender=True)
+
     group_info = await bot.get_group_member_list(group_id=event.group_id, no_cache=True)
 
-    if cmd == "女群友":
+    if "杀群友" in cmd:
+        return
+
+    elif any(keys in cmd for keys in ["女群友", "老婆"]):
         group_info = [mem for mem in group_info if mem.get('sex') == 'female']
-    elif cmd == "男群友":
+    elif any(keys in cmd for keys in ["男群友", "老公"]):
         group_info = [mem for mem in group_info if mem.get('sex') == 'male']
-    elif cmd in {"群友"}:
-        if "杀群友" in str(event.message):
-            return
-        group_info = sorted(
-            group_info, key=lambda x: x["last_sent_time"])[-50:]
+
+    group_info = sorted(
+        group_info, key=lambda x: x["last_sent_time"])[-50:]
 
     member_info = random.choice(group_info)
     user_id = member_info.get("user_id")
     nickname = member_info.get("nickname")
+
     msg = MS.text(f"你抽到的群友是:{nickname}\n")
     msg += MS.image(
         f"https://q.qlogo.cn/headimg_dl?dst_uin={user_id}&spec=640")

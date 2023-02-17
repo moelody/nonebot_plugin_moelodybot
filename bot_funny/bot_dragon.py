@@ -9,7 +9,7 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from ..bot_utils import generate_cache_image_path, is_dragon, convert_to_uri, get_root_path
 
 dragon = on_message(priority=20, block=False)
-dragon_group = [444282933, 303281689, 680653092]
+dragon_group = [444282933, 303281689, 680653092, 567072663]
 
 dragon_cmd = on_keyword(
     keywords=["龙图"],
