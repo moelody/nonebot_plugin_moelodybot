@@ -51,6 +51,7 @@ async def _():
     @app.get("/api/parse_token")
     async def _(token: str):
         status, data = AuthHandler.parse_token(token)
+        print(data)
         if status:
             return {"status": 200, "username": data.get("username"), "usertype": data.get("usertype")}
         else:
