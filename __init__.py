@@ -25,9 +25,9 @@ folder_list = [
     "cache", "fonts", "images", "qqgroup"
 ]
 for folder in folder_list:
-  to_create = Path().resolve() / "data" / folder
-  if not to_create.exists():
-    os.makedirs(str(to_create))
+    to_create = Path().resolve() / "data" / folder
+    if not to_create.exists():
+        os.makedirs(str(to_create))
 
 
 # 机器人忘记挂后台 重启前请打开

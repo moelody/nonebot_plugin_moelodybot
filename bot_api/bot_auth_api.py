@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Union
-
-from fastapi import FastAPI
+import bcrypt
+from fastapi import FastAPI, request
 from fastapi.middleware.cors import CORSMiddleware
 from nonebot import get_app, get_driver
 
@@ -10,6 +10,18 @@ from .bot_sql import BotSql
 
 driver = get_driver()
 sql_manage = BotSql()
+
+
+users_db = {
+    "Alice": {
+        "password": bcrypt.hashpw("password123".encode(), bcrypt.gensalt()),
+        "id": 1
+    },
+    "Bob": {
+        "password": bcrypt.hashpw("password456".encode(), bcrypt.gensalt()),
+        "id": 2
+    }
+}
 
 
 @driver.on_startup
@@ -79,6 +91,23 @@ async def _():
             return {"status": 200, "msg": "更改成功", "token": token}
         else:
             return {"status": 401, "msg": "更改失败"}
+
+    # 1. 用户注册
+    @app.route('/api/register', methods=['POST'])
+    def register():
+        username = request.json['username']
+        password = request.json['password']
+
+        # 对密码进行哈希处理
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+        # 将用户名和哈希密码保存到数据库中
+        users_db[username] = {
+            "password": hashed_password,
+            "id": len(users_db) + 1
+        }
+
+        return 'User registered successfully'
 
     @app.get("/api/add_user")
     async def _(username: str, groups: str):
