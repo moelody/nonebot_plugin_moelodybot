@@ -140,10 +140,10 @@ async def _():
             # 返回token
             return {"status_code": 200, "message": "登录成功", "token": access_token, "data": {"username": userinfo["username"], "groups": userinfo["groups"]}}
 
-        except InvalidTokenError:
-            return {"status_code": 400, "message": "Invalid or expired token"}
         except ExpiredSignatureError:
             return {"status_code": 400, "message": "Token expired"}
+        except InvalidTokenError:
+            return {"status_code": 400, "message": "Invalid or expired token"}
         except Exception as e:
             logger.error(e)
             return {"status_code": 400, "message": "Failed to login"}
