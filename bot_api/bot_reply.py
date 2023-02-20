@@ -3,10 +3,11 @@ from nonebot import get_driver, on_command, on_message
 from nonebot.adapters.onebot.v11 import (GROUP_ADMIN, GROUP_OWNER, Bot,
                                          GroupMessageEvent)
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
-from nonebot.adapters.onebot.v11.message import Message
 from nonebot.params import EventPlainText
+from nonebot.log import logger
 
 from .bot_sql import sql_manage
+from .bot_type import UserCreate
 
 driver = get_driver()
 reply_data = {}
@@ -15,19 +16,16 @@ add_user = on_command("添加用户", priority=10, block=True)
 reply = on_message(priority=9, block=False)
 
 
+# 在qq群添加用户
 @add_user.handle()
-async def _(bot: Bot, event: GroupMessageEvent, msg: Message = EventPlainText()):
+async def _(bot: Bot, event: GroupMessageEvent, msg=EventPlainText()):
     if await GROUP_OWNER(bot, event):
         try:
             command, username, groups = msg.strip().split(" ")
-            sql = """INSERT INTO `userdata` ( `username`, `groups`) VALUES ( %s, %s)"""
+            sql_manage.create_user(
+                UserCreate(username=username, password="admin", groups=groups))
+            await refresh_reply.send("添加成功")
 
-            res, data = sql_manage.add_data(sql, username, groups)
-            if res:
-                await refresh_reply.send("添加成功")
-
-            else:
-                await refresh_reply.send("添加失败")
         except Exception as e:
             print(e)
             await refresh_reply.send("添加失败")
@@ -42,34 +40,63 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @reply.handle()
-async def handle_reply(bot: Bot, event: GroupMessageEvent, msg: Message = EventPlainText()):
+async def handle_reply(event: GroupMessageEvent, msg=EventPlainText()):
     msg = msg.strip().lower()
 
     if res := reply_data.get(f"{msg}|{str(event.group_id)}") or reply_data.get(
         msg
     ):
-
         await reply.finish(MS.text(res))
 
 
 def refresh_reply_data():
+    """更新字典"""
     global reply_data
     reply_data.clear()
-    # status, sqldata = sql_manage.get_data("SELECT * FROM `replydata`")
-    # for data in sqldata:
-    #     keys = data['keyword'].split(",")
-    #     suffix = f"{data['groups']}" if data["groups"] else ""
-    #     for key in keys:
-    #         reply = data['reply'].replace(
-    #             "{}", key) if '{}' in data['reply'] else data['reply']
-    #         reply_data[(key + suffix).lower()] = reply
-
-    # return status, sqldata
+    try:
+        with sql_manage.cnxpool.get_connection() as cnx:
+            return _extracted_from_refresh_reply_data(cnx, reply_data)
+    except Exception as e:
+        logger.error(e)
+        return {"status_code": 200, "msg": "刷新失败"}
 
 
-@driver.on_shutdown
-async def close_db():
-    sql_manage.close()
+def _extracted_from_refresh_reply_data(cnx, reply_data, username="", usertype="admin"):
+    cursor = cnx.cursor()
+    cursor.execute("SELECT * FROM `replydata`")
+
+    if not (result := cursor.fetchall()):
+        return {"status_code": 200, "msg": "没有数据"}
+
+    headers = [i[0]
+               for i in cursor.description]
+    sqldata = [dict(zip(headers, row)) for row in result]
+
+    for data in sqldata:
+        keys = data['keyword'].split(",")
+        suffix = f"{data['qq_groups']}" if data["qq_groups"] else ""
+        for key in keys:
+            reply = data['reply'].replace(
+                "{}", key) if '{}' in data['reply'] else data['reply']
+            reply_data[(key + suffix).lower()] = reply
+    return {"status_code": 200, "sqldata": sqldata}
+
+
+def get_reply_data(cnx, username="", isAdmin=True):
+    cursor = cnx.cursor()
+    if isAdmin:
+        cursor.execute("SELECT * FROM `replydata`")
+    else:
+        cursor.execute(
+            f"SELECT * FROM `replydata` WHERE `username`='{username}'")
+    if not (result := cursor.fetchall()):
+        return {"status_code": 400, "msg": "没有数据"}
+
+    headers = [i[0]
+               for i in cursor.description]
+    sqldata = [dict(zip(headers, row)) for row in result]
+
+    return {"status_code": 200, "sqldata": sqldata}
 
 
 if __name__ == '__main__':

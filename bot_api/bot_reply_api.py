@@ -2,10 +2,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nonebot import get_app, get_driver
+from nonebot.log import logger
 
-from .bot_auth import AuthHandler
-from .bot_reply import refresh_reply_data
+from .bot_reply import refresh_reply_data, get_reply_data
 from .bot_sql import sql_manage
+from .bot_auth import get_user_from_token
 
 driver = get_driver()
 
@@ -28,103 +29,51 @@ async def init_reply():
         allow_headers=["*"]  # 允许携带的 Headers
     )
 
-    @app.get("/api/reply/all_reply_list")
-    async def _():
-        status, sqldata = refresh_reply_data()
-        return {"status": 200, "msg": "获取成功", "sqldata": sqldata}
-
     @app.get("/api/reply/list")
     async def _(token: str):
+        userinfo = await get_user_from_token(token)
+        if userinfo:
+            try:
+                with sql_manage.cnxpool.get_connection() as cnx:
 
-        token_status, data = AuthHandler.parse_token(token)
+                    if userinfo["user_type"] == "admin":
+                        sql_response = get_reply_data(
+                            cnx=cnx, username=userinfo["username"])
+                    else:
+                        sql_response = get_reply_data(
+                            cnx=cnx, username=userinfo["username"], isAdmin=False)
 
-        if token_status:
-            # 管理员直接给数据(全部)
-            if (data.get("usertype") == "admin"):
-                admin_status, sqldata = refresh_reply_data()
-                return {"status": 200, "msg": "获取成功", "token": token, "sqldata": sqldata}
-
-            # 不是管理员获取个人数据
-            sql = """SELECT * FROM `replydata` WHERE `username` = %s"""
-            user_status, sqldata = sql_manage.get_data(
-                sql, data.get('username'))
-
-            if sqldata == []:
-                sql2 = """SELECT * FROM `userdata` WHERE `username` = %s"""
-                status, sqldata2 = sql_manage.get_data(
-                    sql2, data.get('username'))
-
-                sqldata = [
-                    [0, data.get('username'), "", "", sqldata2[0][4], ""]]
-            return {"status": 200, "msg": "获取成功", "token": token, "sqldata": sqldata}
-        else:
-            return {"status": 401, "msg": "获取失败"}
+                    return sql_response
+            except Exception as e:
+                logger.error(f"{e} 错误行数为:{str(e.__traceback__.tb_lineno)}")
+                return {"status_code": 400, "msg": "获取失败"}
+                # 不是管理员获取个人数据
 
     @app.get("/api/reply/add")
     async def _(token: str, key: str, reply: str, groups: str):
 
-        res, data = AuthHandler.parse_token(token)
-
-        if not groups:
-            groups = data.get("groups")
-
-        if not key or not reply:
-            return {"status": 401, "msg": "key 与 reply 不可以为空"}
-        if res:
-            sql = """INSERT INTO `replydata` (`ID`, `username`, `keyword`, `reply`, `groups`) VALUES (NULL, %s, %s, %s,%s);""".replace(
-                "'None',", "null,").replace("None,", "null,")
-            status, msg = sql_manage.get_data(
-                sql, data.get('username'), key, reply, groups)
-            if status:
-                return {"status": 200, "msg": "添加成功"}
-            else:
-                return {"status": 401, "msg": msg}
-        else:
-            return {"status": 401, "msg": "添加失败"}
+        ...
+        # sql = """INSERT INTO `replydata` (`ID`, `username`, `keyword`, `reply`, `groups`) VALUES (NULL, %s, %s, %s,%s);""".replace(
+        #     "'None',", "null,").replace("None,", "null,")
+        # status, msg = sql_manage.get_data(
+        #     sql, data.get('username'), key, reply, groups)
 
     @app.get("/api/reply/update")
     async def _(token: str, key: str, reply: str, groups: str, reply_id: str):
 
-        status, data = AuthHandler.parse_token(token)
-
-        if not groups:
-            groups = data.get("groups")
-
-        if not key or not reply:
-            return {"status": 401, "msg": "key 与 reply 不可以为空"}
-
-        if status:
-            sql = "UPDATE `replydata` SET `keyword` = %s, `reply` = %s, `groups` = %s WHERE `replydata`.`ID` = %s;".replace(
-                "'None',", "null,").replace("None,", "null,")
-            status, msg = sql_manage.get_data(
-                sql, key, reply, groups, reply_id)
-            if status:
-                return {"status": 200, "msg": "添加成功"}
-            else:
-                return {"status": 401, "msg": msg}
-        else:
-            return {"status": 401, "msg": "添加失败"}
+        ...
+        # sql = "UPDATE `replydata` SET `keyword` = %s, `reply` = %s, `groups` = %s WHERE `replydata`.`ID` = %s;".replace(
+        #     "'None',", "null,").replace("None,", "null,")
+        # status, msg = sql_manage.get_data(
+        #     sql, key, reply, groups, reply_id)
 
     @app.get("/api/reply/delete")
     async def _(token: str, reply_id: str):
 
-        status, data = AuthHandler.parse_token(token)
-        # 没有判断用户, 可以加个是管理员 可以无视用户
-        if status:
-            sql = "DELETE FROM `replydata` WHERE `id` = %s;"
-            status, msg = sql_manage.get_data(
-                sql, reply_id)
-            if status:
-                return {"status": 200, "msg": "删除成功"}
-            else:
-                return {"status": 401, "msg": msg}
-        else:
-            return {"status": 401, "msg": "删除失败"}
-
-
-@driver.on_shutdown
-async def close_db():
-    sql_manage.close()
+        ...
+        # sql = "DELETE FROM `replydata` WHERE `id` = %s;"
+        # status, msg = sql_manage.get_data(
+        #     sql, reply_id)
 
 
 if __name__ == '__main__':

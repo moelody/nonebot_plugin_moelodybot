@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nonebot import get_app, get_driver
 
-from .bot_auth import AuthHandler
 from .bot_plan import refresh_plan_data
 from .bot_sql import sql_manage
 
@@ -112,11 +111,6 @@ async def init_plan():
                 return {"status": 401, "msg": msg}
         else:
             return {"status": 401, "msg": "删除失败"}
-
-
-@driver.on_shutdown
-async def close_db():
-    sql_manage.close()
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @plan.handle()
-async def handle_plan(bot: Bot, event: GroupMessageEvent, msg: Message = EventPlainText()):
+async def handle_plan(bot: Bot, event: GroupMessageEvent, msg=EventPlainText()):
     msg = msg.strip().lower()
 
     if res := plan_data.get(f"{msg}|{str(event.group_id)}") or plan_data.get(
@@ -42,11 +42,6 @@ def refresh_plan_data():
     #     ...
 
     # return status, sqldata
-
-
-@driver.on_shutdown
-async def close_db():
-    sql_manage.close()
 
 
 if __name__ == '__main__':
