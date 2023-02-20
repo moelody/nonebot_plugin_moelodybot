@@ -6,15 +6,13 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.params import EventPlainText
 
-from .bot_sql import BotSql
+from .bot_sql import sql_manage
 
 driver = get_driver()
 plan_data = {}
 refresh_plan = on_command("更新任务", priority=10, block=True)
 
 plan = on_message(priority=9, block=False)
-
-sql_manage = BotSql()
 
 
 @refresh_plan.handle()
@@ -38,12 +36,12 @@ async def handle_plan(bot: Bot, event: GroupMessageEvent, msg: Message = EventPl
 def refresh_plan_data():
     global plan_data
     plan_data.clear()
-    status, sqldata = sql_manage.get_data("SELECT * FROM `plandata`")
-    print(sqldata)
-    for data in sqldata:
-        ...
+    # status, sqldata = sql_manage.get_data("SELECT * FROM `plandata`")
+    # print(sqldata)
+    # for data in sqldata:
+    #     ...
 
-    return status, sqldata
+    # return status, sqldata
 
 
 @driver.on_shutdown

@@ -1,27 +1,26 @@
 from datetime import datetime, timedelta, timezone
 from typing import Union
-import bcrypt
-from fastapi import FastAPI, request
+from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
-from nonebot import get_app, get_driver
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
+from nonebot.log import logger
 
+from .bot_sql import sql_manage
+import jwt
+
+from nonebot import get_app, get_driver
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
+from .bot_type import UserCreate, UserLogin
 from .bot_auth import AuthHandler
-from .bot_sql import BotSql
+from ..config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 driver = get_driver()
-sql_manage = BotSql()
 
 
-users_db = {
-    "Alice": {
-        "password": bcrypt.hashpw("password123".encode(), bcrypt.gensalt()),
-        "id": 1
-    },
-    "Bob": {
-        "password": bcrypt.hashpw("password456".encode(), bcrypt.gensalt()),
-        "id": 2
-    }
-}
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 
 @driver.on_startup
@@ -41,29 +40,10 @@ async def _():
         allow_headers=["*"]  # 允许携带的 Headers
     )
 
-    # 验证-------------------------------------------------------------
-    @app.get("/api/auth")
-    async def _(username: str, password: str):
-        status, usertype, user_groups = AuthHandler.verify_password(
-            username, password)
-        if status:
-            expire_seconds = 3600 * 24 * 7
-            data = dict(
-                username=username,
-                exp=datetime.now(timezone.utc)
-                + timedelta(seconds=expire_seconds),
-                usertype=usertype,
-                groups=user_groups,
-            )
-            token = AuthHandler.generate_token(data)
-            return {"status": 200, "username": username, "token": token}
-        else:
-            return {"status": 401, "username": username}
-
     @app.get("/api/parse_token")
     async def _(token: str):
         status, data = AuthHandler.parse_token(token)
-        print(data)
+
         if status:
             return {"status": 200, "username": data.get("username"), "usertype": data.get("usertype")}
         else:
@@ -93,21 +73,80 @@ async def _():
             return {"status": 401, "msg": "更改失败"}
 
     # 1. 用户注册
-    @app.route('/api/register', methods=['POST'])
-    def register():
-        username = request.json['username']
-        password = request.json['password']
+    @app.post("/api/register")
+    async def register(user: UserCreate = Body(...)):
+        try:
+            # 如果用户名或密码为空，返回错误
+            if not user.username or not user.password:
+                return {"status_code": 400, "message": "Username and password cannot be empty"}
 
-        # 对密码进行哈希处理
-        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+            # 查询用户是否已经存在
 
-        # 将用户名和哈希密码保存到数据库中
-        users_db[username] = {
-            "password": hashed_password,
-            "id": len(users_db) + 1
-        }
+            if sql_manage.get_user(user.username):
+                return {"status_code": 400, "message": "Username already exists"}
+            # 创建用户
+            sql_manage.create_user(user)
 
-        return 'User registered successfully'
+            # 返回创建成功信息
+            return {"status_code": 200, "message": "User created successfully"}
+
+        except Exception:
+            return {"status_code": 400, "message": "Failed to create user"}
+
+    # 登录接口
+    @app.post("/api/login")
+    async def login(user: UserLogin = Body(...)):
+        try:
+            # 如果前端传递了 token，那么直接解析 token 并判断是否有效
+            if user.token:
+
+                token_data = jwt.decode(
+                    user.token, SECRET_KEY, algorithms=[ALGORITHM])
+                username = token_data.get("sub")
+                userinfo = sql_manage.get_user(username)
+
+                return (
+                    {
+                        "status_code": 200,
+                        "message": "Token login successful",
+                        "data": {
+                            "username": userinfo["username"],
+                            "groups": userinfo["groups"],
+                        },
+                    }
+                    if userinfo
+                    else {"status_code": 400, "message": "Invalid token"}
+                )
+            # 如果前端没有传递 token，则使用用户名密码进行登录
+            userinfo = sql_manage.get_user(user.username)
+
+            if not userinfo:
+                return {"status_code": 400, "message": "Invalid username or password"}
+
+            # 校验密码是否正确 数据库里的是hashed_password
+            if not pwd_context.verify(user.password, userinfo["password"]):
+                return {"status_code": 400, "message": "Invalid username or password"}
+
+            # 生成JWT
+            access_token_expires = timedelta(
+                minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token_data = {
+                "sub": user.username,
+                "exp": datetime.now(timezone.utc) + access_token_expires,
+            }
+
+            access_token = jwt.encode(
+                access_token_data, SECRET_KEY, algorithm=ALGORITHM)
+            # 返回token
+            return {"status_code": 200, "message": "登录成功", "token": access_token, "data": {"username": userinfo["username"], "groups": userinfo["groups"]}}
+
+        except InvalidTokenError:
+            return {"status_code": 400, "message": "Invalid or expired token"}
+        except ExpiredSignatureError:
+            return {"status_code": 400, "message": "Token expired"}
+        except Exception as e:
+            logger.error(e)
+            return {"status_code": 400, "message": "Failed to login"}
 
     @app.get("/api/add_user")
     async def _(username: str, groups: str):

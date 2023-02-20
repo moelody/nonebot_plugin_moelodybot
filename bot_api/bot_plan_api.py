@@ -5,12 +5,11 @@ from nonebot import get_app, get_driver
 
 from .bot_auth import AuthHandler
 from .bot_plan import refresh_plan_data
-from .bot_sql import BotSql
+from .bot_sql import sql_manage
 
 import datetime
 
 driver = get_driver()
-sql_manage = BotSql()
 
 
 def timestamp2mysqltime(timestamp):

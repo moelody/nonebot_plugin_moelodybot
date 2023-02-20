@@ -2,16 +2,28 @@
 import jwt
 # import bcrypt
 
-from .bot_sql import BotSql
-from ..config import JWT_SECRET_KEY, JWT_ALGORITHM
+from .bot_sql import sql_manage
+from ..config import SECRET_KEY, ALGORITHM
 from nonebot.log import logger
 
-sql_manage = BotSql()
+from .bot_type import User
 
 
 class AuthHandler():
     _expire_message = dict(code=401, msg="token 已经失效")
     _unknown_error_message = dict(code=401, msg="token 解析失败")
+
+    @classmethod
+    def get_user(cls, username: str):
+        cursor = sql_manage.cursor()
+        cursor.execute(f"SELECT * FROM users WHERE username = '{username}'")
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            return User(id=result[0], username=result[1], hashed_password=result[2])
+        else:
+            return None
 
     @classmethod
     def verify_password(cls, username: str, password: str):
@@ -28,9 +40,9 @@ class AuthHandler():
     # 生成token
     @classmethod
     def generate_token(cls, data: dict) -> str:
-        headers = dict(typ="jwt", alg=JWT_ALGORITHM)
+        headers = dict(typ="jwt", alg=ALGORITHM)
         return jwt.encode(
-            payload=data, key=JWT_SECRET_KEY, algorithm=JWT_ALGORITHM, headers=headers
+            payload=data, key=SECRET_KEY, algorithm=ALGORITHM, headers=headers
         )
 
     # 解析token
@@ -38,7 +50,7 @@ class AuthHandler():
     def parse_token(cls, cache_token: str) -> dict:
         try:
             payload_data = jwt.decode(
-                cache_token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+                cache_token, SECRET_KEY, algorithms=[ALGORITHM])
             status = True
             data = payload_data
         except jwt.ExpiredSignatureError:

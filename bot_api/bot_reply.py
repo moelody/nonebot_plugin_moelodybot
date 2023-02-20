@@ -6,15 +6,13 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.params import EventPlainText
 
-from .bot_sql import BotSql
+from .bot_sql import sql_manage
 
 driver = get_driver()
 reply_data = {}
 refresh_reply = on_command("更新回复", priority=10, block=True)
 add_user = on_command("添加用户", priority=10, block=True)
 reply = on_message(priority=9, block=False)
-
-sql_manage = BotSql()
 
 
 @add_user.handle()
@@ -57,16 +55,16 @@ async def handle_reply(bot: Bot, event: GroupMessageEvent, msg: Message = EventP
 def refresh_reply_data():
     global reply_data
     reply_data.clear()
-    status, sqldata = sql_manage.get_data("SELECT * FROM `replydata`")
-    for data in sqldata:
-        keys = data['keyword'].split(",")
-        suffix = f"{data['groups']}" if data["groups"] else ""
-        for key in keys:
-            reply = data['reply'].replace(
-                "{}", key) if '{}' in data['reply'] else data['reply']
-            reply_data[(key + suffix).lower()] = reply
+    # status, sqldata = sql_manage.get_data("SELECT * FROM `replydata`")
+    # for data in sqldata:
+    #     keys = data['keyword'].split(",")
+    #     suffix = f"{data['groups']}" if data["groups"] else ""
+    #     for key in keys:
+    #         reply = data['reply'].replace(
+    #             "{}", key) if '{}' in data['reply'] else data['reply']
+    #         reply_data[(key + suffix).lower()] = reply
 
-    return status, sqldata
+    # return status, sqldata
 
 
 @driver.on_shutdown
