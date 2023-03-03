@@ -1,9 +1,24 @@
 import re
 
 from nonebot import logger, on_regex
-from nonebot.adapters import Event
-
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from .analysis_bilibili_utils import b23_extract, bili_keyword, config
+
+from nonebot.plugin import PluginMetadata
+__version__ = "0.0.1"
+__plugin_meta__ = PluginMetadata(
+    name="b站链接解析",
+    description="b站链接解析",
+    usage='''被动技能''',
+    extra={
+        "version": __version__,
+        "license": "MIT",
+        "author": "yueli",
+        "command": [],
+        "type": 0,
+        "group": "链接解析"
+    },
+)
 
 analysis_bili = on_regex(
     r"(b23.tv)|(bili(22|23|33|2233).cn)|(.bilibili.com)|(^(av|cv)(\d+))|(^BV([a-zA-Z0-9]{10})+)|"
@@ -16,7 +31,7 @@ group_blacklist = getattr(config, "analysis_group_blacklist", [])
 
 
 @analysis_bili.handle()
-async def analysis_main(event: Event) -> None:
+async def analysis_main(event: GroupMessageEvent) -> None:
 
     text = str(event.message).strip()
     if blacklist and int(event.get_user_id()) in blacklist:
@@ -24,12 +39,7 @@ async def analysis_main(event: Event) -> None:
     if re.search(r"(b23.tv)|(bili(22|23|33|2233).cn)", text, re.I):
         # 提前处理短链接，避免解析到其他的
         text = await b23_extract(text)
-    if hasattr(event, "group_id"):
-        group_id = event.group_id
-    elif hasattr(event, "channel_id"):
-        group_id = event.channel_id
-    else:
-        group_id = None
+    group_id = event.group_id if hasattr(event, "group_id") else None
     if group_id in group_blacklist:
         return
     msg = await bili_keyword(group_id, text)

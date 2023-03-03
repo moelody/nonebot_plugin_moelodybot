@@ -100,7 +100,7 @@ async def _():
                     else "登录成功",
                     "data": {
                         "username": userinfo["username"],
-                        "groups": userinfo["qq_groups"],
+                        "qq_groups": userinfo["qq_groups"],
                     },
                     "token": None if user.token else access_token,
                 }
@@ -117,10 +117,10 @@ async def _():
 
     # 创建用户接口
     @app.get("/api/add_user")
-    async def _(username: str, groups: str):
+    async def _(username: str, qq_groups: str):
         try:
             sql_manage.create_user(
-                UserCreate(username=username, password="admin", groups=groups))
+                UserCreate(username=username, password="admin", qq_groups=qq_groups))
             return {"status_code": 200, "message": "创建成功"}
         except Exception as e:
             logger.error(e)

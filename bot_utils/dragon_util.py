@@ -9,10 +9,10 @@ import numpy as np
 from .util import get_root_path
 
 
-def is_dragon(file_path: str):
+def is_dragon(file_path):
 
     det = DragonDetector()
-    img = cv2.imread(file_path)
+    img = cv2.imread(str(file_path))
     return bool(det.is_dragon_image(img))
 
 
@@ -73,7 +73,10 @@ class DragonDetector(object):
         # print(f' -- {len(self.templates)} dragon templates loaded')
 
     def is_dragon_impl(self, kps, imgnp):
+        # 解包关键点和模板形状
         (kp1, des1), template_shape = kps
+
+        # 使用 SIFT 算法计算图像关键点和描述符
         kp2, des2 = self.sift.detectAndCompute(imgnp, None)
         try:
             matches = self.flann.knnMatch(des1, des2, k=2)

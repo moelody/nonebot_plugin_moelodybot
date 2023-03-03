@@ -7,7 +7,24 @@ from nonebot.params import EventPlainText
 from nonebot.log import logger
 
 from .bot_sql import sql_manage
-from .bot_type import UserCreate
+from .bot_type import UserCreate, Reply
+
+
+from nonebot.plugin import PluginMetadata
+__version__ = "0.0.1"
+__plugin_meta__ = PluginMetadata(
+    name="自动问答",
+    description="管理bot自动问答",
+    usage="""更新回复: 刷新回复字典, (请在网页端管理)
+添加用户:添加问答管理员(超管可用)""",
+    extra={
+        "version": __version__,
+        "license": "MIT",
+        "author": "yueli",
+        "command": ["更新回复", "添加用户"],
+        "group": "群管理"
+    },
+)
 
 driver = get_driver()
 reply_data = {}
@@ -21,9 +38,9 @@ reply = on_message(priority=9, block=False)
 async def _(bot: Bot, event: GroupMessageEvent, msg=EventPlainText()):
     if await GROUP_OWNER(bot, event):
         try:
-            command, username, groups = msg.strip().split(" ")
+            command, username, qq_groups = msg.strip().split(" ")
             sql_manage.create_user(
-                UserCreate(username=username, password="admin", groups=groups))
+                UserCreate(username=username, password="admin", qq_groups=qq_groups))
             await refresh_reply.send("添加成功")
 
         except Exception as e:
@@ -97,6 +114,31 @@ def get_reply_data(cnx, username="", isAdmin=True):
     sqldata = [dict(zip(headers, row)) for row in result]
 
     return {"status_code": 200, "sqldata": sqldata}
+
+
+def add_reply_data(cnx, reply: Reply):
+    cursor = cnx.cursor()
+    query = "INSERT INTO `replydata` ( `username`, `keyword`, `reply`, `qq_groups`) VALUES ( %s,%s, %s,%s);"
+    cursor.execute(query, (reply.username, reply.keyword, reply.reply,
+                   reply.qq_groups,))
+    return {"status_code": 200, "msg": "添加成功"}
+
+
+def update_reply_data(cnx, reply: Reply):
+    cursor = cnx.cursor()
+    query = "UPDATE `replydata` SET `keyword` = %s, `reply` = %s, `qq_groups` = %s WHERE `replydata`.`ID` = %s;"
+
+    cursor.execute(query, (reply.keyword, reply.reply,
+                   reply.qq_groups, reply.ID,))
+    return {"status_code": 200, "msg": "更新成功"}
+
+
+def delete_reply_data(cnx, reply_id: str):
+    cursor = cnx.cursor()
+    query = "DELETE FROM `replydata` WHERE `id` = %s;"
+    cursor.execute(query, (reply_id,))
+    relpy_id = cursor.lastrowid
+    return {"status_code": 200, "msg": "删除成功", "relpy_id": relpy_id}
 
 
 if __name__ == '__main__':

@@ -1,12 +1,13 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
 from nonebot import get_app, get_driver
 from nonebot.log import logger
 
-from .bot_reply import refresh_reply_data, get_reply_data
+from .bot_reply import refresh_reply_data, get_reply_data, add_reply_data, update_reply_data, delete_reply_data
 from .bot_sql import sql_manage
 from .bot_auth import get_user_from_token
+from .bot_type import Reply
 
 driver = get_driver()
 
@@ -49,31 +50,43 @@ async def init_reply():
                 return {"status_code": 400, "msg": "获取失败"}
                 # 不是管理员获取个人数据
 
-    @app.get("/api/reply/add")
-    async def _(token: str, key: str, reply: str, groups: str):
+    @app.post("/api/reply/update")
+    async def add_reply(token: str, username: str, qq_groups: str, reply_id: int = 0, key: str = "", reply: str = ""):
 
-        ...
-        # sql = """INSERT INTO `replydata` (`ID`, `username`, `keyword`, `reply`, `groups`) VALUES (NULL, %s, %s, %s,%s);""".replace(
-        #     "'None',", "null,").replace("None,", "null,")
-        # status, msg = sql_manage.get_data(
-        #     sql, data.get('username'), key, reply, groups)
+        userinfo = await get_user_from_token(token)
+        if userinfo:
+            try:
+                with sql_manage.cnxpool.get_connection() as cnx:
+                    reply_obj = Reply(
+                        ID=reply_id,
+                        username=username,
+                        keyword=key,
+                        reply=reply,
+                        qq_groups=qq_groups
+                    )
+                    if reply_id == 0:
+                        sql_response = add_reply_data(
+                            cnx, reply_obj)
+                    else:
+                        sql_response = update_reply_data(cnx, reply_obj)
+                    return sql_response
+            except Exception as err:
+                logger.info(err)
+                return {"status_code": 400, "msg": "数据库添加失败"}
+        else:
+            return {"status_code": 400, "msg": "用户验证添加失败"}
 
-    @app.get("/api/reply/update")
-    async def _(token: str, key: str, reply: str, groups: str, reply_id: str):
-
-        ...
-        # sql = "UPDATE `replydata` SET `keyword` = %s, `reply` = %s, `groups` = %s WHERE `replydata`.`ID` = %s;".replace(
-        #     "'None',", "null,").replace("None,", "null,")
-        # status, msg = sql_manage.get_data(
-        #     sql, key, reply, groups, reply_id)
-
-    @app.get("/api/reply/delete")
+    @app.delete("/api/reply/delete")
     async def _(token: str, reply_id: str):
-
-        ...
-        # sql = "DELETE FROM `replydata` WHERE `id` = %s;"
-        # status, msg = sql_manage.get_data(
-        #     sql, reply_id)
+        userinfo = await get_user_from_token(token)
+        if userinfo:
+            try:
+                with sql_manage.cnxpool.get_connection() as cnx:
+                    sql_response = delete_reply_data(cnx, reply_id)
+                    return sql_response
+            except Exception:
+                logger.info(Exception)
+                return {"status_code": 400, "msg": "删除失败"}
 
 
 if __name__ == '__main__':

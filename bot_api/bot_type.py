@@ -19,16 +19,16 @@ class UserCreate(BaseModel):
     username: str
     password: str
     nickname: Optional[str] = None
-    groups: Union[str, None] = None
+    qq_groups: Union[str, None] = None
 
 
 class Reply(BaseModel):
-    id: Union[int, None] = None
+    ID: Union[int, None] = None
     username: Union[str, None] = None
-    keyword = ""
-    reply = ""
-    groups: Union[list[str], None] = None
+    keyword: str = ""
+    reply: str = ""
+    qq_groups: Union[list[str], str, None] = None
 
 
 rep = Reply()
-print(rep)
+

@@ -37,7 +37,6 @@ def refresh_plan_data():
     global plan_data
     plan_data.clear()
     # status, sqldata = sql_manage.get_data("SELECT * FROM `plandata`")
-    # print(sqldata)
     # for data in sqldata:
     #     ...
 

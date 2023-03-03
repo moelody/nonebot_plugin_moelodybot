@@ -10,6 +10,7 @@ from nonebot.adapters.onebot.v11 import Message, MessageSegment
 
 from ..bot_utils import text_to_image
 
+
 analysis_stat: Dict[int, str] = {}
 
 config = nonebot.get_driver().config
@@ -18,13 +19,17 @@ analysis_display_image_list = getattr(
     config, "analysis_display_image_list", [])
 
 
-async def bili_keyword(group_id: Optional[int], text: str) -> Union[Message, str]:
+async def bili_keyword(group_id: Optional[int], text: str):
     try:
+        print(text)
         # 提取url
         url, page, time_location = extract(text)
+        print(url, page, time_location)
         # 如果是小程序就去搜索标题
         if not url:
+            print(text)
             if title := re.search(r'"desc":("[^"哔哩]+")', text):
+                print(title)
                 vurl = await search_bili_by_title(title[1])
                 if vurl:
                     url, page, time_location = extract(vurl)
@@ -46,80 +51,90 @@ async def bili_keyword(group_id: Optional[int], text: str) -> Union[Message, str
         if group_id:
             if group_id in analysis_stat and analysis_stat[group_id] == vurl:
                 return ""
-            analysis_stat[group_id] = vurl
+            # analysis_stat[group_id] = vurl
     except Exception as e:
         msg = f"bili_keyword Error: {type(e)}"
     return msg
 
 
-async def b23_extract(text: str) -> str:
-    b23 = re.compile(r"b23.tv/(\w+)|(bili(22|23|33|2233).cn)/(\w+)", re.I).search(
-        text.replace("\\", "")
-    )
-    url = f"https://{b23[0]}"
+async def b23_extract(text: str):
+    url = ""
+    if b23 := re.compile(
+        r"b23.tv/(\w+)|(bili(22|23|33|2233).cn)/(\w+)", re.I
+    ).search(text.replace("\\", "")):
+        url = f"https://{b23[0]}"
+
     async with aiohttp.request(
         "GET", url, timeout=aiohttp.client.ClientTimeout(10)
     ) as resp:
         return str(resp.url)
 
 
-def extract(text: str) -> Tuple[str, Optional[str], Optional[str]]:
-    try:
-        url = ""
-        # 视频分p
-        page = re.compile(r"([?&]|&amp;)p=\d+").search(text)
-        # 视频播放定位时间
-        time = re.compile(r"([?&]|&amp;)t=\d+").search(text)
-        # 主站视频 av 号
-        aid = re.compile(r"av\d+", re.I).search(text)
-        # 主站视频 bv 号
-        bvid = re.compile(r"BV([A-Za-z0-9]{10})+", re.I).search(text)
-        # 番剧视频页
-        epid = re.compile(r"ep\d+", re.I).search(text)
-        # 番剧剧集ssid(season_id)
-        ssid = re.compile(r"ss\d+", re.I).search(text)
-        # 番剧详细页
-        mdid = re.compile(r"md\d+", re.I).search(text)
-        # 直播间
-        room_id = re.compile(
-            r"live.bilibili.com/(blanc/|h5/)?(\d+)", re.I).search(text)
-        # 文章
-        cvid = re.compile(
-            r"(/read/(cv|mobile|native)(/|\?id=)?|^cv)(\d+)", re.I
-        ).search(text)
-        # 动态
-        dynamic_id_type2 = re.compile(
-            r"(t|m).bilibili.com/(\d+)\?(.*?)(&|&amp;)type=2", re.I
-        ).search(text)
-        # 动态
-        dynamic_id = re.compile(r"(t|m).bilibili.com/(\d+)", re.I).search(text)
-        if bvid:
-            url = f"https://api.bilibili.com/x/web-interface/view?bvid={bvid[0]}"
-        elif aid:
-            url = f"https://api.bilibili.com/x/web-interface/view?aid={aid[0][2:]}"
-        elif epid:
-            url = (
-                f"https://bangumi.bilibili.com/view/web_api/season?ep_id={epid[0][2:]}"
-            )
-        elif ssid:
-            url = f"https://bangumi.bilibili.com/view/web_api/season?season_id={ssid[0][2:]}"
-        elif mdid:
-            url = f"https://bangumi.bilibili.com/view/web_api/season?media_id={mdid[0][2:]}"
-        elif room_id:
-            url = f"https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id={room_id[2]}"
-        elif cvid:
-            page = cvid[4]
-            url = f"https://api.bilibili.com/x/article/viewinfo?id={page}&mobi_app=pc&from=web"
-        elif dynamic_id_type2:
-            url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?rid={dynamic_id_type2[2]}&type=2"
-        elif dynamic_id:
-            url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id[2]}"
-        return url, page, time
-    except Exception:
-        return "", None, None
+def extract(text: str):
+
+    # 视频分p
+
+    p_match = re.search(r'([?&]|&amp;)p=(\d+)', text)
+    t_match = re.search(r'([?&]|&amp;)t=(\d+)', text)
+
+    page = p_match[2] if p_match else ""
+    time = t_match[2] if t_match else "None"
+
+    # 主站视频 av 号
+    aid = re.compile(r"av\d+", re.I).search(text)
+    # 主站视频 bv 号
+    bvid = re.compile(r"BV([A-Za-z0-9]{10})+", re.I).search(text)
+    # 番剧视频页
+    epid = re.compile(r"ep\d+", re.I).search(text)
+    # 番剧剧集ssid(season_id)
+    ssid = re.compile(r"ss\d+", re.I).search(text)
+    # 番剧详细页
+    mdid = re.compile(r"md\d+", re.I).search(text)
+    # 直播间
+    room_id = re.compile(
+        r"live.bilibili.com/(blanc/|h5/)?(\d+)", re.I).search(text)
+    # 文章
+    cvid = re.compile(
+        r"(/read/(cv|mobile|native)(/|\?id=)?|^cv)(\d+)", re.I
+    ).search(text)
+    # 动态
+    dynamic_id_type2 = re.compile(
+        r"(t|m).bilibili.com/(\d+)\?(.*?)(&|&amp;)type=2", re.I
+    ).search(text)
+    # 动态
+    if dynamic_id := re.compile(r"(t|m).bilibili.com/(\d+)", re.I).search(text):
+        dynamic_id = dynamic_id[2]
+    else:
+        dynamic_id = ""
+    if bvid:
+        url = f"https://api.bilibili.com/x/web-interface/view?bvid={bvid[0]}"
+    elif aid:
+        url = f"https://api.bilibili.com/x/web-interface/view?aid={aid[0][2:]}"
+    elif epid:
+        url = (
+            f"https://bangumi.bilibili.com/view/web_api/season?ep_id={epid[0][2:]}"
+        )
+    elif ssid:
+        url = f"https://bangumi.bilibili.com/view/web_api/season?season_id={ssid[0][2:]}"
+    elif mdid:
+        url = f"https://bangumi.bilibili.com/view/web_api/season?media_id={mdid[0][2:]}"
+    elif room_id:
+        url = f"https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id={room_id[2]}"
+    elif cvid:
+        page = cvid[4]
+        url = f"https://api.bilibili.com/x/article/viewinfo?id={page}&mobi_app=pc&from=web"
+    elif dynamic_id_type2:
+        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?rid={dynamic_id_type2[2]}&type=2"
+    # elif dynamic_id:
+    else:
+        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id[2]}"
+
+    if page is None:
+        page = ""
+    return url, page, time
 
 
-async def search_bili_by_title(title: str) -> str:
+async def search_bili_by_title(title: str):
     search_url = f"https://api.bilibili.com/x/web-interface/search/all/v2?keyword={urllib.parse.quote(title)}"
 
     async with aiohttp.request(
@@ -136,9 +151,7 @@ async def search_bili_by_title(title: str) -> str:
 
 # 处理超过一万的数字
 def handle_num(num: int) -> str:
-    if num > 10000:
-        num = f"{num / 10000:.2f}万"
-    return num
+    return "{:.2f}万".format(num / 10000) if num >= 10000 else str(num)
 
 
 async def video_detail(url: str, **kwargs) -> Tuple[Union[Message, str], str]:
@@ -154,7 +167,7 @@ async def video_detail(url: str, **kwargs) -> Tuple[Union[Message, str], str]:
         cover = (
             MessageSegment.image(res["pic"])
             if analysis_display_image or "video" in analysis_display_image_list
-            else ""
+            else MessageSegment.text("")
         )
         title = f"标题：{res['title']}"
         pubdate = strftime("%Y-%m-%d %H:%M:%S", localtime(res["pubdate"]))
@@ -166,16 +179,16 @@ async def video_detail(url: str, **kwargs) -> Tuple[Union[Message, str], str]:
         img_path = text_to_image([title, tname, stat, desc])
         img = MessageSegment.image(img_path)
 
-        msg = Message([cover, vurl, img])
+        msg = Message([cover, MessageSegment.text(vurl), img])
         return msg, vurl
     except Exception as e:
         msg = f"视频解析出错--Error: {type(e)}"
-        return msg, None
+        return msg, ""
 
 
 async def bangumi_detail(
-    url: str, time_location: str = None
-) -> Tuple[Union[Message, str], str]:
+    url: str, time_location: str
+):
     try:
         async with aiohttp.request(
             "GET", url, timeout=aiohttp.client.ClientTimeout(10)
@@ -186,7 +199,7 @@ async def bangumi_detail(
         cover = (
             MessageSegment.image(res["cover"])
             if analysis_display_image or "bangumi" in analysis_display_image_list
-            else ""
+            else MessageSegment.text("")
         )
         title = f"番剧：{res['title']}\n"
         desc = f"{res['newest_ep']['desc']}\n"
@@ -199,7 +212,9 @@ async def bangumi_detail(
         elif "media_id" in url:
             vurl = f"https://www.bilibili.com/bangumi/media/md{res['media_id']}"
         else:
-            epid = re.compile(r"ep_id=\d+").search(url)[0][len("ep_id="):]
+            epid = re.compile(r"ep_id=\d+").search(url)
+            if epid:
+                epid = epid[0][len("ep_id="):]
             for i in res["episodes"]:
                 if str(i["ep_id"]) == epid:
                     index_title = f"标题：{i['index_title']}\n"
@@ -211,7 +226,7 @@ async def bangumi_detail(
 
         img_path = text_to_image([title, index_title, style, evaluate, desc])
         img = MessageSegment.image(img_path)
-        msg = Message([cover, f"{vurl}\n", img])
+        msg = Message([cover, MessageSegment.text(f"{vurl}\n"), img])
         return msg, vurl
     except Exception as e:
         msg = f"番剧解析出错--Error: {type(e)}"
@@ -219,7 +234,7 @@ async def bangumi_detail(
         return msg, None
 
 
-async def live_detail(url: str) -> Tuple[Union[Message, str], str]:
+async def live_detail(url: str):
     try:
         async with aiohttp.request(
             "GET", url, timeout=aiohttp.client.ClientTimeout(10)
@@ -234,7 +249,7 @@ async def live_detail(url: str) -> Tuple[Union[Message, str], str]:
         cover = (
             MessageSegment.image(res["room_info"]["cover"])
             if analysis_display_image or "live" in analysis_display_image_list
-            else ""
+            else MessageSegment.text("")
         )
         live_status = res["room_info"]["live_status"]
         lock_status = res["room_info"]["lock_status"]
@@ -265,14 +280,14 @@ async def live_detail(url: str) -> Tuple[Union[Message, str], str]:
 
         img_path = text_to_image([title, up, watch, tags, player])
         img = MessageSegment.image(img_path)
-        msg = Message([cover, vurl, img])
+        msg = Message([cover, MessageSegment.text(vurl), img])
         return msg, vurl
     except Exception as e:
         msg = f"直播间解析出错--Error: {type(e)}"
         return msg, None
 
 
-async def article_detail(url: str, cvid: str) -> Tuple[Union[Message, str], str]:
+async def article_detail(url: str, cvid: str):
     try:
         async with aiohttp.request(
             "GET", url, timeout=aiohttp.client.ClientTimeout(10)
@@ -299,14 +314,14 @@ async def article_detail(url: str, cvid: str) -> Tuple[Union[Message, str], str]
         img_path = text_to_image([title, up, view, favorite, like, desc])
         img = MessageSegment.image(img_path)
         msg = Message(images)
-        msg.extend([vurl, img])
+        msg.extend([MessageSegment.text(vurl), img])
         return msg, vurl
     except Exception as e:
         msg = f"专栏解析出错--Error: {type(e)}"
         return msg, None
 
 
-async def dynamic_detail(url: str) -> Tuple[Union[Message, str], str]:
+async def dynamic_detail(url: str):
     try:
         async with aiohttp.request(
             "GET", url, timeout=aiohttp.client.ClientTimeout(10)

@@ -10,6 +10,24 @@ from pathlib import Path
 from ..bot_utils import get_root_path
 
 
+from nonebot.plugin import PluginMetadata
+__version__ = "0.0.1"
+__plugin_meta__ = PluginMetadata(
+    name="备份群文件",
+    description="",
+    usage='''关键词: 备份群文件
+关键词: 恢复群文件''',
+    extra={
+        "version": __version__,
+        "license": "MIT",
+        "author": "yueli",
+        "command": ["备份群文件", "恢复群文件"],
+        "type": 1,
+        "group": "群管理"
+    },
+)
+
+
 backup_group = get_driver().config.dict().get('backup_group', [])
 backup_command = get_driver().config.dict().get('backup_command', "备份群文件")
 backup_maxsize = get_driver().config.dict().get('backup_maxsize', 300)

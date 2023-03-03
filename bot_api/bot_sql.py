@@ -48,7 +48,7 @@ class BOT_SQL:
             cursor = cnx.cursor()
 
             cursor.execute(
-                f"INSERT INTO userdata (username, password,qq_groups) VALUES ('{user.username}', '{hashed_password}','{user.groups}')")
+                f"INSERT INTO userdata (username, password,qq_groups) VALUES ('{user.username}', '{hashed_password}','{user.qq_groups}')")
             cnx.commit()
 
 

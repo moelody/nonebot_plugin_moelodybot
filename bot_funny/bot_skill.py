@@ -25,7 +25,7 @@ async def _poke(bot: Bot, event: PokeNotifyEvent):
         else:
             msg = random.choice(poke_reply)
 
-        await bot.send_msg(group_id=event.group_id, message=msg)
+        await poke.send(msg)
 
     # await bot.send_group_msg(group_id=event.group_id,message=msg)
 
@@ -36,6 +36,6 @@ async def _(event: GroupMessageEvent):
     if event.user_id == 1255029890:
         return
     if str(event.user_id) in config.superusers:
-        await at.finish(random.choice(at_super_reply))
+        await at.send(random.choice(at_super_reply))
     else:
-        await at.finish(random.choice(at_reply))
+        await at.send(random.choice(at_reply))

@@ -3,6 +3,23 @@ import re
 from nonebot import on_message
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 
+from nonebot.plugin import PluginMetadata
+__version__ = "0.0.1"
+__plugin_meta__ = PluginMetadata(
+    name="复读",
+    description="复读群友消息",
+    usage='''被动技能''',
+    extra={
+        "version": __version__,
+        "license": "MIT",
+        "author": "yueli",
+        "command": [],
+        "type": 0,
+        "group": "娱乐功能"
+    },
+)
+from ..config import commands
+
 repeater_group = ["all"]
 shortest = 2
 shortest_times = 2
@@ -33,9 +50,9 @@ def message_preprocess(message: str):
 @m.handle()
 async def repeater(bot: Bot, event: GroupMessageEvent):
     # 检查是否在黑名单中
-    if event.raw_message in blacklist:
-
+    if event.raw_message in blacklist or event.raw_message in commands:
         return
+
     gid = str(event.group_id)
     if gid in repeater_group or "all" in repeater_group:
         global last_message, message_times

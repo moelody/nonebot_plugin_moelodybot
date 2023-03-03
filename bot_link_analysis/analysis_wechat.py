@@ -9,7 +9,24 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from playwright.async_api import async_playwright
 
 
-from ..bot_utils.util import convert_to_uri, generate_cache_image_path
+from ..bot_utils.util import generate_cache_image_path
+
+
+from nonebot.plugin import PluginMetadata
+__version__ = "0.0.1"
+__plugin_meta__ = PluginMetadata(
+    name="微信解析",
+    description="",
+    usage='''被动技能''',
+    extra={
+        "version": __version__,
+        "license": "MIT",
+        "author": "yueli",
+        "command": [],
+        "type": 0,
+        "group": "链接解析"
+    },
+)
 
 
 wechat = on_regex(
@@ -51,4 +68,4 @@ async def _(event: GroupMessageEvent):
         await top.screenshot(path=out)
 
         await browser.close()
-        await wechat.finish(MS.image(convert_to_uri(out)))
+        await wechat.finish(MS.image(out))

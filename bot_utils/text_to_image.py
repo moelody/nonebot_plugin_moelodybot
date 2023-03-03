@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from .util import generate_cache_image_path, convert_to_uri, get_root_path
+from .util import generate_cache_image_path, get_root_path
 
 
 def split_content(content, content_size_list, max_line_width):
@@ -66,7 +66,7 @@ def text_to_image(text_list):
             split_content(to_render_text, msg_size, max_line_width))
 
     image_result = Image.new("RGB", (footage.width, footage_clip_size *
-                                     2 + len(to_render_text_list) * line_height), color=(255, 255, 255, 0))
+                             2 + len(to_render_text_list) * line_height), color=(255, 255, 255, 0))
     image_result.paste(im=header, box=(0, 0))
 
     for idx, text in enumerate(to_render_text_list):
@@ -82,9 +82,9 @@ def text_to_image(text_list):
     image_result.show()
     cache_path = generate_cache_image_path()
 
-    image_result.save(cache_path)
+    image_result.save(str(cache_path))
 
-    return convert_to_uri(cache_path)
+    return cache_path
 
 
 if __name__ == "__main__":

@@ -8,7 +8,24 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from playwright.async_api import async_playwright
 
 
-from ..bot_utils.util import clean_link, convert_to_uri, generate_cache_image_path
+from ..bot_utils.util import clean_link, generate_cache_image_path
+
+
+from nonebot.plugin import PluginMetadata
+__version__ = "0.0.1"
+__plugin_meta__ = PluginMetadata(
+    name="CSDN解析",
+    description="",
+    usage='''被动技能''',
+    extra={
+        "version": __version__,
+        "license": "MIT",
+        "author": "yueli",
+        "command": [],
+        "type": 0,
+        "group": "链接解析"
+    },
+)
 
 
 github = on_regex(
@@ -42,4 +59,4 @@ async def _(event: GroupMessageEvent):
 
         await context.close()
         await browser.close()
-        await github.finish(MS.image(convert_to_uri(out)))
+        await github.finish(MS.image(out))

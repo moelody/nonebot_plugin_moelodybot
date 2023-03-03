@@ -9,10 +9,28 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.log import logger
 from nonebot.params import RawCommand
 
-from ..bot_utils import handle_image, get_root_path, convert_to_uri
+from ..bot_utils import handle_image, get_root_path
+
+
+from nonebot.plugin import PluginMetadata
+
+__version__ = "0.0.1"
+__plugin_meta__ = PluginMetadata(
+    name="随机二次元图",
+    description="获取随机二次元图片",
+    usage="""实用关键词 召唤老婆/我老婆呢""",
+    extra={
+        "version": __version__,
+        "license": "MIT",
+        "author": "yueli",
+        "command": ["召唤老婆", "我老婆呢"],
+        "group": "娱乐功能"
+    },
+)
+
 
 get_moe = on_regex(
-    r"(moe)|(二次元)|(召唤老婆)|(我老婆呢)|(我的爱人)",
+    r"(召唤老婆)|(我老婆呢)|(我的爱人)",
     priority=60, block=True)
 
 
@@ -33,11 +51,11 @@ async def get_setuu(bot: Bot, event: GroupMessageEvent, cmd: str = RawCommand())
 
         try:
             file_path = await handle_image(img_path)
-            msg = MS.image(convert_to_uri(file_path))
+            msg = MS.image(file_path)
             await get_setu.finish(msg)
         except Exception as e:
             msg = MS.text("获取失败喵")
-            logger.error(traceback.print_exc(), '错误信息为', e)
+            traceback.print_exc()
             await get_setu.finish(msg)
 
     else:
@@ -63,7 +81,7 @@ async def get_st_url(url, cmd):
                 content = await img.read()
                 suffix = tar_url.split(".")[-1]
                 target = (
-                    f"{get_root_path()}/data/images/setu/{str(name)}.{suffix}"
+                    f"{get_root_path()}/data/images/setu/{name}.{suffix}"
                 )
 
                 with open(target, 'wb') as f:
