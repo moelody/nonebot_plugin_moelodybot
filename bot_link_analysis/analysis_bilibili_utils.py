@@ -72,8 +72,6 @@ async def b23_extract(text: str):
 
 def extract(text: str):
 
-    # 视频分p
-
     p_match = re.search(r'([?&]|&amp;)p=(\d+)', text)
     t_match = re.search(r'([?&]|&amp;)t=(\d+)', text)
 
@@ -102,10 +100,22 @@ def extract(text: str):
         r"(t|m).bilibili.com/(\d+)\?(.*?)(&|&amp;)type=2", re.I
     ).search(text)
     # 动态
+
+    dynamic_id = ""
+    url = ""
+
     if dynamic_id := re.compile(r"(t|m).bilibili.com/(\d+)", re.I).search(text):
+        print("xin1")
+        print(dynamic_id)
         dynamic_id = dynamic_id[2]
-    else:
-        dynamic_id = ""
+        print(dynamic_id)
+    # 新版动态
+    elif dynamic_id := re.compile(r".+bilibili.com/opus/(\d+)", re.I).search(text):
+        print("xin")
+        print(dynamic_id)
+        dynamic_id = dynamic_id[1]
+        print(dynamic_id)
+    print(dynamic_id)
     if bvid:
         url = f"https://api.bilibili.com/x/web-interface/view?bvid={bvid[0]}"
     elif aid:
@@ -124,11 +134,10 @@ def extract(text: str):
         page = cvid[4]
         url = f"https://api.bilibili.com/x/article/viewinfo?id={page}&mobi_app=pc&from=web"
     elif dynamic_id_type2:
-        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?rid={dynamic_id_type2[2]}&type=2"
-    # elif dynamic_id:
-    else:
-        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id[2]}"
-
+        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?rid={dynamic_id_type2}&type=2"
+    elif dynamic_id:
+        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id}"
+    print(url)
     if page is None:
         page = ""
     return url, page, time
