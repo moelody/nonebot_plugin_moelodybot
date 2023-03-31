@@ -1,4 +1,3 @@
-from nonebot.message import event_preprocessor
 import os
 from pathlib import Path
 
@@ -32,6 +31,13 @@ for folder in folder_list:
 
 # 机器人忘记挂后台 重启前请打开
 
+# from nonebot.message import event_preprocessor
+
 # @event_preprocessor
 # async def _():
 #     raise "跳过"
+
+# sudo supervisorctl restart bot1:bot1_00
+# sudo supervisorctl stop bot1:bot1_00 && cd /www/wwwroot/project/Robot/nobot1 && nb run --reload
+
+# sudo supervisorctl stop cq1:cq1_00 &&cd /www/wwwroot/project/Robot/nobot1/go-cqhttp && /www/wwwroot/project/Robot/nobot1/go-cqhttp/go-cqhttp

@@ -45,26 +45,37 @@ async def change_key():
 
 def get_chat(prompt: str):
     openai.api_key = openai_key
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        temperature=0.3,
-        max_tokens=300,
-        top_p=1.0,
-        frequency_penalty=0.0,
-        presence_penalty=0.0
+
+    # response = openai.Completion.create(
+    #     model="text-davinci-003",
+    #     prompt=prompt,
+    #     temperature=0.3,
+    #     max_tokens=300,
+    #     top_p=1.0,
+    #     frequency_penalty=0.0,
+    #     presence_penalty=0.0
+    # )
+    # print(response)
+    # return response.choices[0].text.lstrip("?").strip()
+
+    # model 3.5
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
-    print(response)
-    return response.choices[0].text.lstrip("?").strip()
+    return completion.choices[0].message["content"]
 
 
 @ai_chat.handle()
 async def chatt(event: GroupMessageEvent, args: Message = CommandArg()):
+    return
     arg = args.extract_plain_text().strip()
     if arg == "":
         return
     gid = event.group_id
-    await ai_chat.finish("目前官方api模块出问题, 请等待修复")
+    # await ai_chat.finish("目前官方api模块出问题, 请等待修复")
     if gid not in openai_group:
         await ai_chat.finish("请联系管理员开通喵~")
 

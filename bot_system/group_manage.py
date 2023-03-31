@@ -1,7 +1,7 @@
 import datetime
 import time
 
-from nonebot import on_command
+from nonebot import on_command, get_driver
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, GROUP_ADMIN, GROUP_OWNER
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 
@@ -30,6 +30,7 @@ __plugin_meta__ = PluginMetadata(
 
 bot_notice = on_command("通知", priority=10, block=True)
 kill_member = on_command("杀群友", priority=10, block=True)
+config = get_driver().config
 
 
 def isKilled(timecode):
@@ -41,14 +42,15 @@ def isKilled(timecode):
 
 @bot_notice.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args=CommandArg()):
-    args = args.extract_plain_text()
-    groups = await bot.get_group_list()
-    msg = MS.text(f"通知: {args}")
+    if str(event.user_id) in config.superusers:
+        args = args.extract_plain_text()
+        groups = await bot.get_group_list()
+        msg = MS.text(f"通知: {args}")
 
-    for group in groups:
-        if group != str(event.group_id):
-            await bot_notice.send(message=msg)
-            time.sleep(0.75)
+        for group in groups:
+            if group != str(event.group_id):
+                await bot_notice.send(message=msg)
+                time.sleep(0.75)
 
 
 @kill_member.handle()

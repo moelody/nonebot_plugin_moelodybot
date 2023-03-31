@@ -15,5 +15,7 @@ pyvenv.cfg
 test.py
 config.py
 
+data/qqgroup
+
 # SQL
 localhost.session.sql

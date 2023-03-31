@@ -9,6 +9,7 @@ from nonebot.params import EventPlainText
 
 from ..bot_utils.translator import translate_youdao
 from ..bot_utils import generate_cache_image_path, text_to_image
+from nonebot import logger
 
 
 from nonebot.plugin import PluginMetadata
@@ -70,6 +71,7 @@ async def _(bot: Bot, event: GroupMessageEvent, msg=EventPlainText()):
         video_id = match[0]
         msgs = await get_ytb_info(video_id, youtube_key)
         try:
-            await ytb.finish(msgs)
+            if msgs:
+                await ytb.send(msgs)
         except Exception:
-            await ytb.finish("获取失败喵")
+            logger.info("ytb_获取失败喵")
