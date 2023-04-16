@@ -8,7 +8,7 @@ import aiohttp
 import nonebot
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 
-from ..bot_utils import text_to_image
+from ..bot_utils.text_to_image import text_to_image
 
 
 analysis_stat: Dict[int, str] = {}
@@ -21,15 +21,15 @@ analysis_display_image_list = getattr(
 
 async def bili_keyword(group_id: Optional[int], text: str):
     try:
-        print(text)
+
         # 提取url
         url, page, time_location = extract(text)
-        print(url, page, time_location)
+
         # 如果是小程序就去搜索标题
         if not url:
-            print(text)
+
             if title := re.search(r'"desc":("[^"哔哩]+")', text):
-                print(title)
+
                 vurl = await search_bili_by_title(title[1])
                 if vurl:
                     url, page, time_location = extract(vurl)
@@ -48,10 +48,12 @@ async def bili_keyword(group_id: Optional[int], text: str):
             msg, vurl = await dynamic_detail(url)
 
         # 避免多个机器人解析重复推送
-        if group_id:
-            if group_id in analysis_stat and analysis_stat[group_id] == vurl:
-                return ""
-            # analysis_stat[group_id] = vurl
+        if (
+            group_id
+            and group_id in analysis_stat
+            and analysis_stat[group_id] == vurl
+        ):
+            return ""
     except Exception as e:
         msg = f"bili_keyword Error: {type(e)}"
     return msg
@@ -72,74 +74,40 @@ async def b23_extract(text: str):
 
 def extract(text: str):
 
+    # 匹配 p 和 t 参数
     p_match = re.search(r'([?&]|&amp;)p=(\d+)', text)
     t_match = re.search(r'([?&]|&amp;)t=(\d+)', text)
-
     page = p_match[2] if p_match else ""
     time = t_match[2] if t_match else "None"
 
-    # 主站视频 av 号
-    aid = re.compile(r"av\d+", re.I).search(text)
-    # 主站视频 bv 号
-    bvid = re.compile(r"BV([A-Za-z0-9]{10})+", re.I).search(text)
-    # 番剧视频页
-    epid = re.compile(r"ep\d+", re.I).search(text)
-    # 番剧剧集ssid(season_id)
-    ssid = re.compile(r"ss\d+", re.I).search(text)
-    # 番剧详细页
-    mdid = re.compile(r"md\d+", re.I).search(text)
-    # 直播间
-    room_id = re.compile(
-        r"live.bilibili.com/(blanc/|h5/)?(\d+)", re.I).search(text)
-    # 文章
-    cvid = re.compile(
-        r"(/read/(cv|mobile|native)(/|\?id=)?|^cv)(\d+)", re.I
-    ).search(text)
-    # 动态
-    dynamic_id_type2 = re.compile(
-        r"(t|m).bilibili.com/(\d+)\?(.*?)(&|&amp;)type=2", re.I
-    ).search(text)
-    # 动态
+    # 匹配不同类型的视频链接
 
-    dynamic_id = ""
-    url = ""
-
-    if dynamic_id := re.compile(r"(t|m).bilibili.com/(\d+)", re.I).search(text):
-        print("xin1")
-        print(dynamic_id)
-        dynamic_id = dynamic_id[2]
-        print(dynamic_id)
-    # 新版动态
-    elif dynamic_id := re.compile(r".+bilibili.com/opus/(\d+)", re.I).search(text):
-        print("xin")
-        print(dynamic_id)
-        dynamic_id = dynamic_id[1]
-        print(dynamic_id)
-    print(dynamic_id)
-    if bvid:
-        url = f"https://api.bilibili.com/x/web-interface/view?bvid={bvid[0]}"
-    elif aid:
+    # 根据匹配结果生成 URL
+    if aid := re.search(r"av\d+", text, re.I):
         url = f"https://api.bilibili.com/x/web-interface/view?aid={aid[0][2:]}"
-    elif epid:
-        url = (
-            f"https://bangumi.bilibili.com/view/web_api/season?ep_id={epid[0][2:]}"
-        )
-    elif ssid:
+    elif bvid := re.search(r"BV([A-Za-z0-9]{10})+", text, re.I):
+        url = f"https://api.bilibili.com/x/web-interface/view?bvid={bvid[0]}"
+    elif epid := re.search(r"ep\d+", text, re.I):
+        url = f"https://bangumi.bilibili.com/view/web_api/season?ep_id={epid[0][2:]}"
+    elif ssid := re.search(r"ss\d+", text, re.I):
         url = f"https://bangumi.bilibili.com/view/web_api/season?season_id={ssid[0][2:]}"
-    elif mdid:
+    elif mdid := re.search(r"md\d+", text, re.I):
         url = f"https://bangumi.bilibili.com/view/web_api/season?media_id={mdid[0][2:]}"
-    elif room_id:
+    elif room_id := re.search(r"live.bilibili.com/(blanc/|h5/)?(\d+)", text, re.I):
         url = f"https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id={room_id[2]}"
-    elif cvid:
+    elif cvid := re.search(
+            r"(/read/(cv|mobile|native)(/|\?id=)?|^cv)(\d+)", text, re.I):
         page = cvid[4]
         url = f"https://api.bilibili.com/x/article/viewinfo?id={page}&mobi_app=pc&from=web"
-    elif dynamic_id_type2:
-        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?rid={dynamic_id_type2}&type=2"
-    elif dynamic_id:
-        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id}"
-    print(url)
-    if page is None:
-        page = ""
+    elif dynamic_id_type2 := re.search(
+            r"(t|m).bilibili.com/(\d+)\?(.*?)(&|&amp;)type=2", text, re.I):
+        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?rid={dynamic_id_type2[2]}&type=2"
+    elif dynamic_id := re.search(r"(t|m).bilibili.com/(\d+)", text,
+                                 re.I) or re.search(r"(.+bilibili.com)/opus/(\d+)", text, re.I):
+        url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id[2]}"
+    else:
+        url = ""
+
     return url, page, time
 
 

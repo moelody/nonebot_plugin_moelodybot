@@ -7,7 +7,7 @@ import os
 import time
 from pathlib import Path
 
-from ..bot_utils import get_root_path
+from ..bot_utils.util import get_root_path
 
 
 from nonebot.plugin import PluginMetadata
@@ -15,8 +15,7 @@ __version__ = "0.0.1"
 __plugin_meta__ = PluginMetadata(
     name="备份群文件",
     description="",
-    usage='''关键词: 备份群文件
-关键词: 恢复群文件''',
+    usage='''备份群文件/恢复群文件''',
     extra={
         "version": __version__,
         "license": "MIT",
@@ -103,11 +102,10 @@ async def SaveToDisk(bot, file_data, local_folder, gid):
 async def createFolder(bot, root_dir, gid):
     # 获取QQ群的文件夹名
     group_root = await bot.get_group_root_files(group_id=gid)
-    group_folders = group_root.get("folders")
-    group_folder_names = []
-    if group_folders:
+    if group_folders := group_root.get("folders"):
         group_folder_names = [i["folder_name"] for i in group_folders]
-
+    else:
+        group_folder_names = []
     # 如果本地有该文件夹 而群没有, 则创建
 
     for local_folder in os.scandir(root_dir):
@@ -119,10 +117,10 @@ async def createFolder(bot, root_dir, gid):
 
 async def upload_files(bot, gid, folder_id, root_dir):
     group_root = await bot.get_group_files_by_folder(group_id=gid, folder_id=folder_id)
-    files = group_root.get("files")
-    filenames = []
-    if files:
+    if files := group_root.get("files"):
         filenames = [ff["file_name"] for ff in files]
+    else:
+        filenames = []
     if os.path.exists(root_dir):
         for entry in os.scandir(root_dir):
             if entry.is_file() and entry.name not in filenames:
@@ -162,7 +160,7 @@ async def essen(bot: Bot, event: GroupMessageEvent):
 @recovery.handle()
 async def recover(bot: Bot, event: GroupMessageEvent):
 
-    if await GROUP_ADMIN(bot, event) and await GROUP_OWNER(bot, event):
+    if await GROUP_ADMIN(bot, event) or await GROUP_OWNER(bot, event):
         await linker.finish("只允许群主或者管理员备份!")
 
     gid = event.group_id
@@ -184,7 +182,12 @@ async def recover(bot: Bot, event: GroupMessageEvent):
                 folder_id = folder_data["folder_id"]
                 root = await bot.get_group_files_by_folder(group_id=gid, folder_id=folder_id)
 
-                await upload_files(bot, gid, folder_id, root_dir + "/" + folder_data["folder_name"])
+                await upload_files(
+                    bot,
+                    gid,
+                    folder_id,
+                    f"{root_dir}/" + folder_data["folder_name"],
+                )
 
         await recovery.finish("恢复完成")
 
@@ -196,11 +199,6 @@ async def link(bot: Bot, event: GroupMessageEvent):
         await linker.finish("只允许群主或者管理员备份!")
 
     global success_count, jump_count, back_size, large_files, broken_files
-    success_count = 0
-    jump_count = 0
-    back_size = 0
-    large_files = []
-    broken_files = []
     gid = event.group_id
     if str(gid) in backup_group or backup_group == []:
 
@@ -229,23 +227,19 @@ async def link(bot: Bot, event: GroupMessageEvent):
 
                 local_folder_path = f"{get_root_path()}/data/qqgroup/{str(gid)}/{group_folder['folder_name']}"
 
-                group_folder_files = group_folder_data.get("files")
-
-                if group_folder_files:
+                if group_folder_files := group_folder_data.get("files"):
                     for group_folder_file in group_folder_files:
                         await SaveToDisk(bot, group_folder_file, local_folder_path, gid)
 
-        if len(large_files) == 0:
-            large_info = "无"
-        else:
-            large_info = "\n".join(large_files)
-
-        if len(broken_files) == 0:
-            broken_info = ""
-        else:
-            broken_info = "检测到损坏文件:" + '\n'.join(broken_files)
-
+        large_files = []
+        large_info = "\n".join(large_files) if large_files else "无"
+        broken_files = []
+        broken_info = "检测到损坏文件:" + \
+            '\n'.join(broken_files) if broken_files else ""
+        back_size = 0
         back_size_info = round(back_size / 1024 / 1024, 2)
         tsum = round(time.time() - tstart, 2)
 
+        success_count = 0
+        jump_count = 0
         await linker.finish("此次备份耗时%2d秒; 共备份%d个文件,跳过已备份%d个文件, 累计备份大小%.2f M,\n未备份大文件列表(>%dm):\n%s\n%s" % (tsum, success_count, jump_count, back_size_info, backup_maxsize, large_info, broken_info))

@@ -1,4 +1,4 @@
-# https://blog.csdn.net/...
+# https://music.163.com/#/song?id=399249&userid=132242222
 import re
 import time
 
@@ -8,7 +8,7 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from playwright.async_api import async_playwright
 
 
-from ..bot_utils.util import clean_link, generate_cache_image_path
+from ..bot_utils.util import generate_cache_image_path
 
 
 from nonebot.plugin import PluginMetadata
@@ -29,7 +29,7 @@ __plugin_meta__ = PluginMetadata(
 
 
 csdn = on_regex(
-    r"(blog.csdn.net)",
+    r"(music.163.com)",
     flags=re.I, priority=99,
 )
 
@@ -37,22 +37,17 @@ csdn = on_regex(
 @csdn.handle()
 async def _(event: GroupMessageEvent):
     text = str(event.message).strip()
-    url = clean_link(text)
+    url = text
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path=r"/opt/google/chrome/chrome", headless=True)
         context = await browser.new_context()
         page = await context.new_page()
         await page.goto(url)
-        time.sleep(4)
-        await page.evaluate("""() => {
-            document.querySelector('#blogColumnPayAdvert').style.display = 'none';
-                }""")
-        await page.evaluate("""() => {
-        document.querySelector('.toolbar-btn-login').remove();
-            }""")
-        top = page.locator(".blog-content-box")
+        time.sleep(2)
 
+        top = page.locator(".blog-content-box")
+        "f-ff2"
         out = generate_cache_image_path()
 
         await top.screenshot(path=out)

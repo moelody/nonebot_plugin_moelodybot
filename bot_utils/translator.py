@@ -92,7 +92,7 @@ async def translate_youdao(input: str, mode: str):
         mode = "EN2ZH_CN"
     elif mode == "en":
         mode = "ZH_CH2EN"
-    input = "かわいかわい"
+
     mode = "JA2ZH_CN"
     async with aiohttp.ClientSession() as session:
         data = {"doctype": "json", "type": mode, "i": input}

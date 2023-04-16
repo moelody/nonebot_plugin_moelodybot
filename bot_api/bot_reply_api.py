@@ -1,10 +1,10 @@
 
-from fastapi import FastAPI, Body
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nonebot import get_app, get_driver
 from nonebot.log import logger
 
-from .bot_reply import refresh_reply_data, get_reply_data, add_reply_data, update_reply_data, delete_reply_data
+from ..bot_system.bot_reply import refresh_reply_data, get_reply_data, add_reply_data, update_reply_data, delete_reply_data
 from .bot_sql import sql_manage
 from .bot_auth import get_user_from_token
 from .bot_type import Reply
@@ -46,7 +46,7 @@ async def init_reply():
 
                     return sql_response
             except Exception as e:
-                logger.error(f"{e} 错误行数为:{str(e.__traceback__.tb_lineno)}")
+                logger.error(f"{e}")
                 return {"status_code": 400, "msg": "获取失败"}
                 # 不是管理员获取个人数据
 

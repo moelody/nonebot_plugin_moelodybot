@@ -6,8 +6,8 @@ from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.params import EventPlainText
 from nonebot.log import logger
 
-from .bot_sql import sql_manage
-from .bot_type import UserCreate, Reply
+from ..bot_api.bot_sql import sql_manage
+from ..bot_api.bot_type import UserCreate, Reply
 
 
 from nonebot.plugin import PluginMetadata
@@ -15,8 +15,7 @@ __version__ = "0.0.1"
 __plugin_meta__ = PluginMetadata(
     name="自动问答",
     description="管理bot自动问答",
-    usage="""更新回复: 刷新回复字典, (请在网页端管理)
-添加用户:添加问答管理员(超管可用)""",
+    usage="""请在网页端管理 bot.yuelili.com""",
     extra={
         "version": __version__,
         "license": "MIT",

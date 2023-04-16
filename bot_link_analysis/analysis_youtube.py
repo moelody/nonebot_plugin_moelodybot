@@ -7,15 +7,16 @@ from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.params import EventPlainText
 
-from ..bot_utils.translator import translate_youdao
-from ..bot_utils import generate_cache_image_path, text_to_image
+from ..bot_utils.util import tran_deepl_pro
+from ..bot_utils.util import generate_cache_image_path
+from ..bot_utils.text_to_image import text_to_image
 from nonebot import logger
 
 
 from nonebot.plugin import PluginMetadata
 __version__ = "0.0.1"
 __plugin_meta__ = PluginMetadata(
-    name="youtube解析",
+    name="Youtube解析",
     description="",
     usage='''被动技能''',
     extra={
@@ -46,7 +47,9 @@ async def get_ytb_info(video_id: str, api_key: str):
                 data = await response.json()
 
                 title = data["items"][0]["snippet"]["title"]
-                description = await translate_youdao(data["items"][0]["snippet"]["description"].replace("\n", "|"))
+                des = data["items"][0]["snippet"]["description"].replace(
+                    "\n", "|")
+                description = tran_deepl_pro(des)
                 assert description
                 description = description.replace("|", "\n")
                 if len(description) > 200:
@@ -66,7 +69,7 @@ async def get_ytb_info(video_id: str, api_key: str):
 @ytb.handle()
 async def _(bot: Bot, event: GroupMessageEvent, msg=EventPlainText()):
 
-    pattern = "(?<=youtube\.com\/watch\?v=)[^&]+"
+    pattern = r"(?<=youtube\.com\/watch\?v=)[^&]+"
     if match := re.search(pattern, msg):
         video_id = match[0]
         msgs = await get_ytb_info(video_id, youtube_key)

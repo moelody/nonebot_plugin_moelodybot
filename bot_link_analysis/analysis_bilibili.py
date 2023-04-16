@@ -7,7 +7,7 @@ from .analysis_bilibili_utils import b23_extract, bili_keyword, config
 from nonebot.plugin import PluginMetadata
 __version__ = "0.0.1"
 __plugin_meta__ = PluginMetadata(
-    name="b站链接解析",
+    name="Bilibili解析",
     description="b站链接解析",
     usage='''被动技能''',
     extra={

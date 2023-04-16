@@ -65,7 +65,7 @@ def get_chat(prompt: str):
             {"role": "user", "content": prompt}
         ]
     )
-    return completion.choices[0].message["content"]
+    return completion.choices[0].message["content"]  # type: ignore
 
 
 @ai_chat.handle()

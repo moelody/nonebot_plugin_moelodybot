@@ -2,18 +2,17 @@
 
 from nonebot import on_command
 from nonebot.params import CommandArg
-
-from ..bot_utils.translator import translate_youdao
-
 from nonebot.plugin import PluginMetadata
 
+from ..bot_utils.util import tran_deepl_pro
 
-import langid
+
+# import langid
 __version__ = "0.0.1"
 __plugin_meta__ = PluginMetadata(
     name="翻译",
     description="",
-    usage='''翻译+英文''',
+    usage='''翻译 + 要翻译的内容(=> 中文)''',
     extra={
         "version": __version__,
         "license": "MIT",
@@ -30,8 +29,5 @@ tran = on_command("translate", aliases={"翻译"}, priority=9, block=True)
 @tran.handle()
 async def _(args=CommandArg()):
     if arg := args.extract_plain_text():
-        language, confidence = langid.classify(arg)
-        text = await translate_youdao(arg, language)
-
-        if text:
-            await tran.send(text)
+        res = tran_deepl_pro(arg)
+        await tran.send(res)

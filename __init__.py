@@ -14,7 +14,8 @@ load_all_plugins(
     [
         "src/plugins/nonebot_plugin_yuelibot/bot_system",
         'src/plugins/nonebot_plugin_yuelibot/bot_funny',
-        "src/plugins/nonebot_plugin_yuelibot/bot_scheduler_work",
+        "src/plugins/nonebot_plugin_yuelibot/bot_scheduler",
+        "src/plugins/nonebot_plugin_yuelibot/bot_random",
     ]
 )
 

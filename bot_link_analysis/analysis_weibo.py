@@ -9,7 +9,7 @@ from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from playwright.async_api import async_playwright
-from ..bot_utils import generate_cache_image_path, clean_link
+from ..bot_utils.util import generate_cache_image_path, clean_link
 
 analysis_weibo = on_regex(
     r"(weibo.com)|(weibo.cn)",

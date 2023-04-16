@@ -6,7 +6,7 @@ from nonebot.log import logger
 from playwright.async_api import async_playwright
 
 import asyncio
-from ..bot_utils import generate_cache_image_path
+from ..bot_utils.util import generate_cache_image_path
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 import time
 
@@ -15,12 +15,12 @@ __version__ = "0.0.1"
 __plugin_meta__ = PluginMetadata(
     name="成分查看",
     description="查看B站用户成分",
-    usage="""成分 + B站uid""",
+    usage="""查成分 + B站uid""",
     extra={
         "version": __version__,
         "license": "MIT",
         "author": "yueli",
-        "command": ["成分"],
+        "command": ["查成分"],
         "group": "娱乐功能"
     },
 )

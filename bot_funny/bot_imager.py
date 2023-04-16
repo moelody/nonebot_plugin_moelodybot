@@ -6,10 +6,10 @@ from aiohttp import TCPConnector
 from nonebot import on_command, on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
-from nonebot.log import logger
 from nonebot.params import RawCommand
 
-from ..bot_utils import handle_image, get_root_path
+from ..bot_utils.util import get_root_path
+from ..bot_utils.image_handler import handle_image
 
 
 from nonebot.plugin import PluginMetadata
@@ -54,6 +54,7 @@ async def get_setuu(bot: Bot, event: GroupMessageEvent, cmd: str = RawCommand())
             msg = MS.image(file_path)
             await get_setu.finish(msg)
         except Exception as e:
+            print(e)
             msg = MS.text("获取失败喵")
             traceback.print_exc()
             await get_setu.finish(msg)

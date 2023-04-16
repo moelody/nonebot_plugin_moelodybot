@@ -1,4 +1,5 @@
 import json
+import time
 import aiohttp
 import contextlib
 import nonebot
@@ -20,14 +21,19 @@ __plugin_meta__ = PluginMetadata(
         "author": "yueli",
         "command": [],
         "type": 0,
-        "group": "实用功能"
+        "group": "定时功能"
     },
 )
 
 
 plugin_config = {
     "read_qq_friends": [435826135],
-    "read_qq_groups": [680653092, 151998078],
+    "read_qq_groups": [680653092,  # PV
+                       151998078,  # 打卡
+                       797038305,  # 鹤梦
+                       773030463  # 朵鸽
+                       ],
+
     "read_inform_time": {"HOUR": 8, "MINUTE": 0}
 }
 
@@ -41,12 +47,19 @@ def remove_upprintable_chars(s):
 
 async def read60s():
     msg = await get_image()
+    bot = nonebot.get_bot()
     for qq in plugin_config.get("read_qq_friends", []):
-        await nonebot.get_bot().send_private_msg(user_id=qq, message=Message(msg))
+        await bot.send_private_msg(user_id=qq, message=Message(msg))
 
-    # for qq_group in plugin_config.get("read_qq_groups", []):
-    #     # MessageEvent可以使用CQ发图片
-    #     await nonebot.get_bot().send_group_msg(group_id=qq_group, message=Message(msg))
+    groups = (
+        plugin_config.get("read_qq_groups", [])
+        or await bot.get_group_list()
+    )
+
+    for qq_group in groups:
+        # MessageEvent可以使用CQ发图片
+        await bot.send_group_msg(group_id=qq_group, message=Message(msg))
+        time.sleep(1)
 
 
 async def get_image_url(url):
@@ -63,7 +76,7 @@ async def get_image():
     for url in urls:
         with contextlib.suppress(Exception):
             lst = await get_image_url(url)
-            return "今日60S读世界已送达\n" + MessageSegment(lst)
+            return "今日60S读世界已送达\n" + MessageSegment.image(lst)
     return "无法获取图片"
 
 

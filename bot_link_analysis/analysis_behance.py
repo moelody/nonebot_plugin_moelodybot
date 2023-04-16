@@ -39,6 +39,7 @@ github = on_regex(
 async def _(event: GroupMessageEvent):
     text = str(event.message).strip()
     url = clean_link(text)
+    print(url)
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path=r"/opt/google/chrome/chrome", headless=True, proxy={"server": "http://127.0.0.1:10809"})
         page = await browser.new_page()

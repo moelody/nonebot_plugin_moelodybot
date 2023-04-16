@@ -6,16 +6,17 @@ from nonebot import on_message, on_keyword
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
 
-from ..bot_utils import generate_cache_image_path, is_dragon, get_root_path
+from ..bot_utils.util import generate_cache_image_path, get_root_path
+from ..bot_utils.dragon_util import is_dragon
 from pathlib import Path
 
 
 from nonebot.plugin import PluginMetadata
 __version__ = "0.0.1"
 __plugin_meta__ = PluginMetadata(
-    name="龙图插件",
+    name="龙图",
     description="使用龙图斗图",
-    usage="""关键字含龙图,或者发送龙图""",
+    usage="""龙图""",
     extra={
         "version": __version__,
         "license": "MIT",
@@ -47,6 +48,7 @@ async def _(event: GroupMessageEvent):
 
 @dragon.handle()
 async def _(event: GroupMessageEvent):
+    return
     if event.group_id not in dragon_group:
         return
 

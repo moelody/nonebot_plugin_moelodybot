@@ -9,7 +9,7 @@ from nonebot.log import logger
 from nonebot.typing import T_State
 
 
-from ..bot_utils import get_root_path
+from ..bot_utils.util import get_root_path
 
 
 from nonebot.plugin import PluginMetadata
